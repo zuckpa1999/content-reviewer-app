@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
-import { Plus, Search, SlidersHorizontal, X, Film, Tv, Sparkles } from 'lucide-react';
+import { Plus, Search, SlidersHorizontal, X, Film, Sparkles } from 'lucide-react';
 import type { MediaEntry, ContentType, SortOption } from './types';
 import { useLocalStorage } from './useLocalStorage';
 import MediaCard from './MediaCard';
@@ -8,12 +8,7 @@ import AddEntryModal from './AddEntryModal';
 import DetailModal from './DetailModal';
 import EmptyState from './EmptyState';
 
-const FILTER_TYPES: { label: string; value: ContentType | 'All' }[] = [
-  { label: 'All',       value: 'All' },
-  { label: 'Movies',    value: 'Movie' },
-  { label: 'TV Series', value: 'TV Series' },
-  { label: 'Anime',     value: 'Anime' },
-];
+const BUILTIN_TYPES = ['Movie', 'TV Series', 'Anime'];
 
 const SORT_OPTIONS: { label: string; value: SortOption }[] = [
   { label: 'Newest first',   value: 'newest' },
@@ -25,6 +20,7 @@ const SORT_OPTIONS: { label: string; value: SortOption }[] = [
 
 export default function App() {
   const [entries, setEntries]             = useLocalStorage<MediaEntry[]>('media-journal-v1', []);
+  const [customTypes, setCustomTypes]     = useLocalStorage<string[]>('media-journal-custom-types', []);
   const [showAddModal, setShowAddModal]   = useState(false);
   const [editEntry, setEditEntry]         = useState<MediaEntry | null>(null);
   const [viewEntry, setViewEntry]         = useState<MediaEntry | null>(null);
@@ -32,6 +28,13 @@ export default function App() {
   const [filterType, setFilterType]       = useState<ContentType | 'All'>('All');
   const [sortBy, setSortBy]               = useState<SortOption>('newest');
   const [showFilters, setShowFilters]     = useState(false);
+
+  const allTypes = useMemo(() => [...BUILTIN_TYPES, ...customTypes], [customTypes]);
+
+  const filterTypes = useMemo(() => [
+    { label: 'All', value: 'All' as const },
+    ...allTypes.map(t => ({ label: t, value: t })),
+  ], [allTypes]);
 
   /* ── Derived data ─────────────────────────────────────────────── */
   const filtered = useMemo(() => {
@@ -64,10 +67,7 @@ export default function App() {
   }, [entries, search, filterType, sortBy]);
 
   const stats = useMemo(() => ({
-    total:   entries.length,
-    movies:  entries.filter(e => e.type === 'Movie').length,
-    series:  entries.filter(e => e.type === 'TV Series').length,
-    anime:   entries.filter(e => e.type === 'Anime').length,
+    total: entries.length,
     avgRating: entries.length
       ? (entries.reduce((s, e) => s + e.rating, 0) / entries.length).toFixed(1)
       : '—',
@@ -108,6 +108,9 @@ export default function App() {
     setViewEntry(null);
     setShowAddModal(true);
   };
+
+  const handleAddType = (type: string) => setCustomTypes(prev => [...prev, type]);
+  const handleRemoveType = (type: string) => setCustomTypes(prev => prev.filter(t => t !== type));
 
   const openAdd = () => {
     setEditEntry(null);
@@ -167,12 +170,10 @@ export default function App() {
 
         {/* ── Stats bar ────────────────────────────────────────── */}
         {entries.length > 0 && (
-          <div className="grid grid-cols-4 gap-2 sm:gap-4 py-5 border-b border-dark-700/40">
+          <div className="grid grid-cols-2 gap-2 sm:gap-4 py-5 border-b border-dark-700/40">
             {[
-              { label: 'Total',   value: stats.total,      icon: <Sparkles className="w-3.5 h-3.5" /> },
-              { label: 'Movies',  value: stats.movies,     icon: <Film className="w-3.5 h-3.5" /> },
-              { label: 'Series',  value: stats.series,     icon: <Tv className="w-3.5 h-3.5" /> },
-              { label: 'Avg ★',   value: stats.avgRating,  icon: null },
+              { label: 'Total',  value: stats.total,     icon: <Sparkles className="w-3.5 h-3.5" /> },
+              { label: 'Avg ★',  value: stats.avgRating, icon: null },
             ].map(s => (
               <div key={s.label} className="bg-dark-800 rounded-xl p-3 sm:p-4 border border-dark-700/50 text-center">
                 <div className="flex items-center justify-center gap-1 text-dark-400 text-xs mb-1">
@@ -230,10 +231,10 @@ export default function App() {
             <div className="space-y-3 animate-fade-in">
               {/* Type pills */}
               <div className="flex gap-2 flex-wrap">
-                {FILTER_TYPES.map(f => (
+                {filterTypes.map(f => (
                   <button
                     key={f.value}
-                    onClick={() => setFilterType(f.value as ContentType | 'All')}
+                    onClick={() => setFilterType(f.value)}
                     className={`px-3.5 py-1.5 rounded-full text-sm font-medium border transition-all
                                 ${filterType === f.value
                                   ? 'bg-accent text-white border-accent'
@@ -297,6 +298,9 @@ export default function App() {
           onSave={handleSave}
           onClose={() => { setShowAddModal(false); setEditEntry(null); }}
           editEntry={editEntry}
+          customTypes={customTypes}
+          onAddType={handleAddType}
+          onRemoveType={handleRemoveType}
         />
       )}
 

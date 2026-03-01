@@ -1,63 +1,107 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, ImageIcon, Star, Upload, Link } from 'lucide-react';
+import { X, ImageIcon, Star, Upload, Link, Plus, Check } from 'lucide-react';
 import type { MediaEntry, ContentType } from './types';
 
 interface Props {
   onSave: (entry: Omit<MediaEntry, 'id' | 'createdAt'>) => void;
   onClose: () => void;
   editEntry?: MediaEntry | null;
+  customTypes: string[];
+  onAddType: (type: string) => void;
+  onRemoveType: (type: string) => void;
 }
 
 const MAX_WORDS = 100;
+const BUILTIN_TYPES = ['Movie', 'TV Series', 'Anime'];
 
 function countWords(text: string): number {
   return text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
 }
 
-const CONTENT_TYPES: ContentType[] = ['Movie', 'TV Series', 'Anime'];
-
 const ratingLabels: Record<number, string> = {
-  1: 'Poor',
-  2: 'Fair',
+  1: 'Shit',
+  1.5: 'Bad',
+  2: 'Eh',
+  2.5: 'Meh',
   3: 'Good',
+  3.5: 'Pretty Good',
   4: 'Great',
+  4.5: 'I love it',
   5: 'Masterpiece',
 };
 
-export default function AddEntryModal({ onSave, onClose, editEntry }: Props) {
+function getRatingColor(rating: number): string {
+  if (rating >= 3.5) return 'text-green-400';
+  if (rating >= 2.5) return 'text-yellow-400';
+  return 'text-red-400';
+}
+
+export default function AddEntryModal({ onSave, onClose, editEntry, customTypes, onAddType, onRemoveType }: Props) {
   const today = new Date().toISOString().split('T')[0];
 
-  const [name, setName]             = useState(editEntry?.name ?? '');
-  const [imageUrl, setImageUrl]     = useState(editEntry?.imageUrl ?? '');
-  const [dateWatched, setDate]      = useState(editEntry?.dateWatched ?? today);
-  const [rating, setRating]         = useState(editEntry?.rating ?? 3);
-  const [thoughts, setThoughts]     = useState(editEntry?.thoughts ?? '');
-  const [type, setType]             = useState<ContentType>(editEntry?.type ?? 'Movie');
+  const [name, setName] = useState(editEntry?.name ?? '');
+  const [imageUrl, setImageUrl] = useState(editEntry?.imageUrl ?? '');
+  const [dateWatched, setDate] = useState(editEntry?.dateWatched ?? today);
+  const [rating, setRating] = useState(editEntry?.rating ?? 3);
+  const [thoughts, setThoughts] = useState(editEntry?.thoughts ?? '');
+  const [type, setType] = useState<ContentType>(editEntry?.type ?? 'Movie');
   const [imageError, setImageError] = useState(false);
-  const [errors, setErrors]         = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [imageSource, setImageSource] = useState<'url' | 'file'>(
     editEntry?.imageUrl?.startsWith('data:') ? 'file' : 'url'
   );
 
+  const [addingType, setAddingType] = useState(false);
+  const [newTypeName, setNewTypeName] = useState('');
+  const newTypeInputRef = useRef<HTMLInputElement>(null);
+
+  const allTypes = [...BUILTIN_TYPES, ...customTypes];
+
   const firstInputRef = useRef<HTMLInputElement>(null);
-  const fileInputRef  = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const wordCount = countWords(thoughts);
   const wordsLeft = MAX_WORDS - wordCount;
 
   useEffect(() => {
-    // Lock body scroll
     document.body.style.overflow = 'hidden';
     firstInputRef.current?.focus();
     return () => { document.body.style.overflow = ''; };
   }, []);
 
-  // Close on Escape
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (addingType) {
+          setAddingType(false);
+          setNewTypeName('');
+        } else {
+          onClose();
+        }
+      }
+    };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
+  }, [onClose, addingType]);
+
+  useEffect(() => {
+    if (addingType) newTypeInputRef.current?.focus();
+  }, [addingType]);
+
+  const handleConfirmNewType = () => {
+    const trimmed = newTypeName.trim();
+    if (!trimmed) return;
+    if (allTypes.some(t => t.toLowerCase() === trimmed.toLowerCase())) return;
+    onAddType(trimmed);
+    setType(trimmed);
+    setAddingType(false);
+    setNewTypeName('');
+  };
+
+  const handleRemoveCustomType = (t: string) => {
+    onRemoveType(t);
+    if (type === t) setType('Movie');
+  };
 
   const validate = () => {
     const errs: Record<string, string> = {};
@@ -96,7 +140,6 @@ export default function AddEntryModal({ onSave, onClose, editEntry }: Props) {
     const val = e.target.value;
     const words = countWords(val);
     if (words > MAX_WORDS) {
-      // Truncate to max words
       const truncated = val.trim().split(/\s+/).slice(0, MAX_WORDS).join(' ');
       setThoughts(truncated);
     } else {
@@ -165,7 +208,6 @@ export default function AddEntryModal({ onSave, onClose, editEntry }: Props) {
 
             {/* Image source */}
             <div className="space-y-2">
-              {/* Tab toggle */}
               <div className="flex rounded-xl overflow-hidden border border-dark-600 bg-dark-700">
                 <button
                   type="button"
@@ -242,21 +284,78 @@ export default function AddEntryModal({ onSave, onClose, editEntry }: Props) {
             {/* Type */}
             <div className="space-y-1.5">
               <label className="block text-sm font-medium text-dark-200">Type</label>
-              <div className="grid grid-cols-3 gap-2">
-                {CONTENT_TYPES.map((t) => (
+              <div className="flex flex-wrap gap-2">
+                {allTypes.map((t) => {
+                  const isCustom = !BUILTIN_TYPES.includes(t);
+                  return (
+                    <div key={t} className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setType(t)}
+                        className={`py-2 px-3 rounded-xl text-sm font-medium border transition-all duration-150
+                                    ${isCustom ? 'pr-7' : ''}
+                                    ${type === t
+                                      ? 'bg-accent text-white border-accent'
+                                      : 'bg-dark-700 text-dark-300 border-dark-600 hover:border-dark-400 hover:text-dark-100'
+                                    }`}
+                      >
+                        {t}
+                      </button>
+                      {isCustom && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCustomType(t)}
+                          className="absolute right-1.5 top-1/2 -translate-y-1/2 text-dark-400 hover:text-white transition-colors"
+                          aria-label={`Remove ${t}`}
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Add type button / inline input */}
+                {addingType ? (
+                  <div className="flex items-center gap-1">
+                    <input
+                      ref={newTypeInputRef}
+                      type="text"
+                      value={newTypeName}
+                      onChange={e => setNewTypeName(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleConfirmNewType(); } }}
+                      placeholder="Type name…"
+                      className="py-2 px-3 rounded-xl bg-dark-700 border border-accent/60 text-white text-sm
+                                 focus:outline-none focus:ring-1 focus:ring-accent/40 w-28"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleConfirmNewType}
+                      className="p-2 rounded-xl bg-accent text-white hover:bg-accent-hover transition-colors"
+                      aria-label="Confirm new type"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setAddingType(false); setNewTypeName(''); }}
+                      className="p-2 rounded-xl bg-dark-700 border border-dark-600 text-dark-300 hover:text-white transition-colors"
+                      aria-label="Cancel"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ) : (
                   <button
-                    key={t}
                     type="button"
-                    onClick={() => setType(t)}
-                    className={`py-2.5 px-3 rounded-xl text-sm font-medium border transition-all duration-150
-                                ${type === t
-                                  ? 'bg-accent text-white border-accent'
-                                  : 'bg-dark-700 text-dark-300 border-dark-600 hover:border-dark-400 hover:text-dark-100'
-                                }`}
+                    onClick={() => setAddingType(true)}
+                    className="py-2 px-3 rounded-xl text-sm font-medium border border-dashed
+                               border-dark-500 text-dark-400 hover:border-dark-300 hover:text-dark-100
+                               transition-all duration-150 flex items-center gap-1"
                   >
-                    {t}
+                    <Plus className="w-3.5 h-3.5" /> Add type
                   </button>
-                ))}
+                )}
               </div>
             </div>
 
@@ -289,7 +388,7 @@ export default function AddEntryModal({ onSave, onClose, editEntry }: Props) {
                   <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                   <span className="text-white font-bold text-lg leading-none">{rating}</span>
                   <span className="text-dark-400 text-sm">/ 5</span>
-                  <span className="text-yellow-400 text-sm font-medium">{ratingLabels[rating]}</span>
+                  <span className={`${getRatingColor(rating)} text-sm font-medium`}>{ratingLabels[rating]}</span>
                 </div>
               </div>
               <input
@@ -297,13 +396,13 @@ export default function AddEntryModal({ onSave, onClose, editEntry }: Props) {
                 type="range"
                 min={1}
                 max={5}
-                step={1}
+                step={0.5}
                 value={rating}
                 onChange={(e) => setRating(Number(e.target.value))}
                 className="w-full accent-red-600"
               />
               <div className="flex justify-between text-xs text-dark-400 px-0.5">
-                {[1,2,3,4,5].map(n => <span key={n}>{n}</span>)}
+                {[1, 1.5, 2.5, 3.5, 5].map(n => <span key={n}>{n}</span>)}
               </div>
             </div>
 

@@ -1,4 +1,4 @@
-export type ContentType = 'Movie' | 'TV Series' | 'Anime';
+export type ContentType = string;
 
 export interface MediaEntry {
   id: string;
