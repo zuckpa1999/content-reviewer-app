@@ -10,9 +10,9 @@ interface Props {
 }
 
 const typeBadgeColor: Record<string, string> = {
-  'Movie':     'bg-blue-500/20 text-blue-300 border-blue-500/30',
+  'Movie': 'bg-blue-500/20 text-blue-300 border-blue-500/30',
   'TV Series': 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-  'Anime':     'bg-pink-500/20 text-pink-300 border-pink-500/30',
+  'Anime': 'bg-pink-500/20 text-pink-300 border-pink-500/30',
 };
 
 export default function MediaCard({ entry, onClick, onDelete }: Props) {
@@ -25,9 +25,7 @@ export default function MediaCard({ entry, onClick, onDelete }: Props) {
     <article
       onClick={onClick}
       className="group relative bg-dark-800 rounded-2xl overflow-hidden border border-dark-600/40
-                 cursor-pointer transition-all duration-300
-                 hover:border-dark-500/70 hover:shadow-2xl hover:shadow-black/50
-                 hover:-translate-y-1 active:scale-[0.98] animate-scale-in"
+                 cursor-pointer transition-all duration-300"
     >
       {/* Poster Image */}
       <div className="relative overflow-hidden aspect-[2/3] w-full bg-dark-700">
