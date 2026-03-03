@@ -12,16 +12,16 @@ interface Props {
 }
 
 const typeBadgeColor: Record<string, string> = {
-  'Movie':     'bg-blue-500/20 text-blue-300 border-blue-500/30',
+  'Movie': 'bg-blue-500/20 text-blue-300 border-blue-500/30',
   'TV Series': 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-  'Anime':     'bg-pink-500/20 text-pink-300 border-pink-500/30',
+  'Anime': 'bg-pink-500/20 text-pink-300 border-pink-500/30',
 };
 
 const ratingLabels: Record<number, { label: string; color: string }> = {
-  1: { label: 'Poor',        color: 'text-red-400' },
-  2: { label: 'Fair',        color: 'text-orange-400' },
-  3: { label: 'Good',        color: 'text-yellow-400' },
-  4: { label: 'Great',       color: 'text-lime-400' },
+  1: { label: 'Poor', color: 'text-red-400' },
+  2: { label: 'Fair', color: 'text-orange-400' },
+  3: { label: 'Good', color: 'text-yellow-400' },
+  4: { label: 'Great', color: 'text-lime-400' },
   5: { label: 'Masterpiece', color: 'text-green-400' },
 };
 
@@ -161,9 +161,9 @@ export default function DetailModal({ entry, onClose, onEdit, onDelete }: Props)
         <div className="px-5 py-4 border-t border-dark-700 flex gap-3">
           <button
             onClick={handleDelete}
-            className="flex items-center gap-2 px-4 py-3 rounded-xl border border-dark-600 text-dark-300 font-medium text-sm
-                       hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-colors
-                       focus:outline-none focus:ring-2 focus:ring-red-500/40"
+            className="flex items-center gap-2 px-4 py-3 rounded-xl border bg-accent border-dark-600 text-dark-300 font-medium text-sm
+                       hover:bg-accent-hover text-white
+                      focus:outline-none focus:ring-2 focus:ring-red-500/40"
           >
             <Trash2 className="w-4 h-4" />
             Delete

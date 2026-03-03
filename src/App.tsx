@@ -11,23 +11,23 @@ import EmptyState from './EmptyState';
 const BUILTIN_TYPES = ['Movie', 'TV Series', 'Anime'];
 
 const SORT_OPTIONS: { label: string; value: SortOption }[] = [
-  { label: 'Newest first',   value: 'newest' },
-  { label: 'Oldest first',   value: 'oldest' },
-  { label: 'Highest rated',  value: 'rating-high' },
-  { label: 'Lowest rated',   value: 'rating-low' },
-  { label: 'A → Z',          value: 'name-az' },
+  { label: 'Newest first', value: 'newest' },
+  { label: 'Oldest first', value: 'oldest' },
+  { label: 'Highest rated', value: 'rating-high' },
+  { label: 'Lowest rated', value: 'rating-low' },
+  { label: 'A → Z', value: 'name-az' },
 ];
 
 export default function App() {
-  const [entries, setEntries]             = useLocalStorage<MediaEntry[]>('media-journal-v1', []);
-  const [customTypes, setCustomTypes]     = useLocalStorage<string[]>('media-journal-custom-types', []);
-  const [showAddModal, setShowAddModal]   = useState(false);
-  const [editEntry, setEditEntry]         = useState<MediaEntry | null>(null);
-  const [viewEntry, setViewEntry]         = useState<MediaEntry | null>(null);
-  const [search, setSearch]               = useState('');
-  const [filterType, setFilterType]       = useState<ContentType | 'All'>('All');
-  const [sortBy, setSortBy]               = useState<SortOption>('newest');
-  const [showFilters, setShowFilters]     = useState(false);
+  const [entries, setEntries] = useLocalStorage<MediaEntry[]>('media-journal-v1', []);
+  const [customTypes, setCustomTypes] = useLocalStorage<string[]>('media-journal-custom-types', []);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editEntry, setEditEntry] = useState<MediaEntry | null>(null);
+  const [viewEntry, setViewEntry] = useState<MediaEntry | null>(null);
+  const [search, setSearch] = useState('');
+  const [filterType, setFilterType] = useState<ContentType | 'All'>('All');
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [showFilters, setShowFilters] = useState(false);
 
   const allTypes = useMemo(() => [...BUILTIN_TYPES, ...customTypes], [customTypes]);
 
@@ -54,12 +54,12 @@ export default function App() {
     // Sort
     result.sort((a, b) => {
       switch (sortBy) {
-        case 'newest':      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        case 'oldest':      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case 'newest': return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case 'oldest': return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
         case 'rating-high': return b.rating - a.rating;
-        case 'rating-low':  return a.rating - b.rating;
-        case 'name-az':     return a.name.localeCompare(b.name);
-        default:            return 0;
+        case 'rating-low': return a.rating - b.rating;
+        case 'name-az': return a.name.localeCompare(b.name);
+        default: return 0;
       }
     });
 
@@ -98,9 +98,40 @@ export default function App() {
   };
 
   const handleDelete = (id: string) => {
+    const idx = entries.findIndex(e => e.id === id);
+    const deleted = entries[idx];
+
     setEntries(prev => prev.filter(e => e.id !== id));
-    toast.success('Entry deleted');
     if (viewEntry?.id === id) setViewEntry(null);
+
+    const restore = () => {
+      setEntries(curr => {
+        const next = [...curr];
+        next.splice(idx, 0, deleted);
+        return next;
+      });
+    };
+
+    toast((t) => (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <span>Entry deleted</span>
+        <button
+          onClick={() => { restore(); toast.dismiss(t.id); }}
+          style={{
+            background: '#e50914',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '6px',
+            padding: '4px 10px',
+            fontSize: '13px',
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          Undo
+        </button>
+      </div>
+    ), { duration: 5000 });
   };
 
   const handleEdit = (entry: MediaEntry) => {
@@ -118,6 +149,11 @@ export default function App() {
   };
 
   const isFiltered = search.trim() !== '' || filterType !== 'All';
+
+  const bigBanner = [
+    { label: 'Total entries', value: stats.total, icon: <Film className="w-4 h-4" /> },
+    { label: 'Average rating', value: stats.avgRating, icon: <Sparkles className="w-4 h-4" /> },
+  ];
 
   return (
     <div className="min-h-dvh bg-dark-900">
@@ -171,10 +207,7 @@ export default function App() {
         {/* ── Stats bar ────────────────────────────────────────── */}
         {entries.length > 0 && (
           <div className="grid grid-cols-2 gap-2 sm:gap-4 py-5 border-b border-dark-700/40">
-            {[
-              { label: 'Total',  value: stats.total,     icon: <Sparkles className="w-3.5 h-3.5" /> },
-              { label: 'Avg ★',  value: stats.avgRating, icon: null },
-            ].map(s => (
+            {bigBanner.map(s => (
               <div key={s.label} className="bg-dark-800 rounded-xl p-3 sm:p-4 border border-dark-700/50 text-center">
                 <div className="flex items-center justify-center gap-1 text-dark-400 text-xs mb-1">
                   {s.icon}
@@ -217,9 +250,9 @@ export default function App() {
               className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all
                           focus:outline-none focus:ring-2 focus:ring-accent/40
                           ${showFilters
-                            ? 'bg-accent/10 border-accent/40 text-accent'
-                            : 'bg-dark-800 border-dark-700 text-dark-300 hover:text-white hover:border-dark-600'
-                          }`}
+                  ? 'bg-accent/10 border-accent/40 text-accent'
+                  : 'bg-dark-800 border-dark-700 text-dark-300 hover:text-white hover:border-dark-600'
+                }`}
             >
               <SlidersHorizontal className="w-4 h-4" />
               <span className="hidden sm:inline">Filter</span>
@@ -237,9 +270,9 @@ export default function App() {
                     onClick={() => setFilterType(f.value)}
                     className={`px-3.5 py-1.5 rounded-full text-sm font-medium border transition-all
                                 ${filterType === f.value
-                                  ? 'bg-accent text-white border-accent'
-                                  : 'bg-dark-800 text-dark-300 border-dark-700 hover:text-white hover:border-dark-500'
-                                }`}
+                        ? 'bg-accent text-white border-accent'
+                        : 'bg-dark-800 text-dark-300 border-dark-700 hover:text-white hover:border-dark-500'
+                      }`}
                   >
                     {f.label}
                   </button>

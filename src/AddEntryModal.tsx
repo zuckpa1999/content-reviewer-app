@@ -11,7 +11,7 @@ interface Props {
   onRemoveType: (type: string) => void;
 }
 
-const MAX_WORDS = 100;
+const MAX_CHAR = 100;
 const BUILTIN_TYPES = ['Movie', 'TV Series', 'Anime'];
 
 function countWords(text: string): number {
@@ -60,8 +60,8 @@ export default function AddEntryModal({ onSave, onClose, editEntry, customTypes,
 
   const firstInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const wordCount = countWords(thoughts);
-  const wordsLeft = MAX_WORDS - wordCount;
+  //const wordCount = countWords(thoughts);
+  const wordsLeft = MAX_CHAR - thoughts.length;
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -107,7 +107,7 @@ export default function AddEntryModal({ onSave, onClose, editEntry, customTypes,
     const errs: Record<string, string> = {};
     if (!name.trim()) errs.name = 'Title is required.';
     if (!dateWatched) errs.date = 'Date is required.';
-    if (wordCount > MAX_WORDS) errs.thoughts = `Maximum ${MAX_WORDS} words allowed.`;
+    if (thoughts.length > MAX_CHAR) errs.thoughts = `Maximum ${MAX_CHAR} characters allowed.`;
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -139,8 +139,8 @@ export default function AddEntryModal({ onSave, onClose, editEntry, customTypes,
   const handleThoughtsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
     const words = countWords(val);
-    if (words > MAX_WORDS) {
-      const truncated = val.trim().split(/\s+/).slice(0, MAX_WORDS).join(' ');
+    if (words > MAX_CHAR) {
+      const truncated = val.trim().split(/\s+/).slice(0, MAX_CHAR).join(' ');
       setThoughts(truncated);
     } else {
       setThoughts(val);
@@ -295,9 +295,9 @@ export default function AddEntryModal({ onSave, onClose, editEntry, customTypes,
                         className={`py-2 px-3 rounded-xl text-sm font-medium border transition-all duration-150
                                     ${isCustom ? 'pr-7' : ''}
                                     ${type === t
-                                      ? 'bg-accent text-white border-accent'
-                                      : 'bg-dark-700 text-dark-300 border-dark-600 hover:border-dark-400 hover:text-dark-100'
-                                    }`}
+                            ? 'bg-accent text-white border-accent'
+                            : 'bg-dark-700 text-dark-300 border-dark-600 hover:border-dark-400 hover:text-dark-100'
+                          }`}
                       >
                         {t}
                       </button>
@@ -413,7 +413,7 @@ export default function AddEntryModal({ onSave, onClose, editEntry, customTypes,
                   Thoughts
                 </label>
                 <span className={`text-xs font-medium tabular-nums ${wordsLeft <= 10 ? 'text-red-400' : 'text-dark-400'}`}>
-                  {wordsLeft} words left
+                  {wordsLeft} / {MAX_CHAR}
                 </span>
               </div>
               <textarea
