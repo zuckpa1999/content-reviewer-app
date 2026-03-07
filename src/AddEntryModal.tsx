@@ -114,7 +114,7 @@ export default function AddEntryModal({ onSave, onClose, editEntry, customTypes,
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    // if (!validate()) return;
     onSave({ name: name.trim(), imageUrl, dateWatched, rating, thoughts: thoughts.trim(), type });
   };
 

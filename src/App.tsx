@@ -187,16 +187,15 @@ export default function App() {
               </span>
             </div>
 
-            {/* Add button */}
+            {/* Add button — hidden on mobile, shown on sm+ */}
             <button
               onClick={openAdd}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-white font-semibold text-sm
+              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-white font-semibold text-sm
                          hover:bg-accent-hover active:scale-95 transition-all
                          focus:outline-none focus:ring-2 focus:ring-accent/60 focus:ring-offset-2 focus:ring-offset-dark-900"
             >
               <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Add Entry</span>
-              <span className="sm:hidden">Add</span>
+              <span>Add Entry</span>
             </button>
           </div>
         </div>
@@ -345,6 +344,18 @@ export default function App() {
           onDelete={handleDelete}
         />
       )}
+
+      {/* ── Mobile FAB ────────────────────────────────────────── */}
+      <div className="sm:hidden fixed bottom-6 right-6 z-40">
+        <button
+          onClick={openAdd}
+          className="flex items-center justify-center w-14 h-14 rounded-full bg-accent text-white
+                     shadow-lg shadow-accent/40 hover:bg-accent-hover active:scale-95 transition-all
+                     focus:outline-none focus:ring-2 focus:ring-accent/60"
+        >
+          <Plus className="w-6 h-6" />
+        </button>
+      </div>
     </div>
   );
 }
