@@ -24,6 +24,19 @@ import type { ReactElement } from 'react';
 import App from '../App';
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Mock AuthContext — flows tests focus on journal behaviour, not auth.
+// We mock useAuth to always return a logged-in user so App never shows LoginScreen.
+// ─────────────────────────────────────────────────────────────────────────────
+vi.mock('../AuthContext', () => ({
+  useAuth: vi.fn(() => ({
+    user: { id: 'test-1', firstName: 'Test', lastName: 'User', email: 'test@gmail.com', provider: 'google' },
+    logout: vi.fn(),
+    isLoading: false,
+  })),
+  getUserInitials: () => 'TU',
+}));
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Why mock react-hot-toast?
 //
 // toast() accepts JSX and renders it in a portal attached to document.body.

@@ -1,12 +1,66 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
-import { Plus, Search, SlidersHorizontal, X, Film, Sparkles } from 'lucide-react';
+import { Plus, Search, SlidersHorizontal, X, Film, Sparkles, LogOut, ChevronDown } from 'lucide-react';
 import type { MediaEntry, ContentType, SortOption } from './types';
 import { useLocalStorage } from './useLocalStorage';
+import { useAuth, getUserInitials } from './AuthContext';
+import type { User } from './AuthContext';
 import MediaCard from './MediaCard';
 import AddEntryModal from './AddEntryModal';
 import DetailModal from './DetailModal';
 import EmptyState from './EmptyState';
+import LoginScreen from './LoginScreen';
+
+function UserMenu({ user, onLogout }: { user: User; onLogout: () => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(p => !p)}
+        className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-dark-800
+                   transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40"
+        aria-label="Account menu"
+      >
+        <div className="w-7 h-7 rounded-full bg-accent ring-2 ring-accent/25 flex items-center justify-center
+                        text-white text-xs font-black select-none flex-shrink-0">
+          {getUserInitials(user)}
+        </div>
+        <span className="hidden sm:block text-sm font-medium text-dark-100">{user.firstName}</span>
+        <ChevronDown className={`hidden sm:block w-3.5 h-3.5 text-dark-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-2 w-56 bg-dark-800 rounded-xl border border-dark-700
+                        shadow-xl shadow-black/50 overflow-hidden animate-scale-in z-50">
+          <div className="px-4 py-3.5 border-b border-dark-700/80">
+            <p className="text-white text-sm font-semibold">{user.firstName} {user.lastName}</p>
+            <p className="text-dark-400 text-xs mt-0.5 truncate">{user.email}</p>
+          </div>
+          <div className="p-1.5">
+            <button
+              onClick={() => { onLogout(); setOpen(false); }}
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-dark-300
+                         hover:text-white hover:bg-dark-700 transition-colors text-left"
+            >
+              <LogOut className="w-4 h-4 flex-shrink-0" />
+              Sign out
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const BUILTIN_TYPES = ['Movie', 'TV Series', 'Anime'];
 
@@ -19,6 +73,7 @@ const SORT_OPTIONS: { label: string; value: SortOption }[] = [
 ];
 
 export default function App() {
+  const { user, logout } = useAuth();
   const [entries, setEntries] = useLocalStorage<MediaEntry[]>('media-journal-v1', []);
   const [customTypes, setCustomTypes] = useLocalStorage<string[]>('media-journal-custom-types', []);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -148,6 +203,9 @@ export default function App() {
     setShowAddModal(true);
   };
 
+  // Auth gate — placed after all hooks so Rules of Hooks are satisfied
+  if (!user) return <LoginScreen />;
+
   const isFiltered = search.trim() !== '' || filterType !== 'All';
 
   const bigBanner = [
@@ -187,16 +245,19 @@ export default function App() {
               </span>
             </div>
 
-            {/* Add button — hidden on mobile, shown on sm+ */}
-            <button
-              onClick={openAdd}
-              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-white font-semibold text-sm
-                         hover:bg-accent-hover active:scale-95 transition-all
-                         focus:outline-none focus:ring-2 focus:ring-accent/60 focus:ring-offset-2 focus:ring-offset-dark-900"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Add Entry</span>
-            </button>
+            {/* Right side: Add button + user */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={openAdd}
+                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-white font-semibold text-sm
+                           hover:bg-accent-hover active:scale-95 transition-all
+                           focus:outline-none focus:ring-2 focus:ring-accent/60 focus:ring-offset-2 focus:ring-offset-dark-900"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Entry</span>
+              </button>
+              <UserMenu user={user} onLogout={logout} />
+            </div>
           </div>
         </div>
       </header>
@@ -236,6 +297,7 @@ export default function App() {
               {search && (
                 <button
                   onClick={() => setSearch('')}
+                  aria-label="Clear search"
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-white transition-colors"
                 >
                   <X className="w-4 h-4" />

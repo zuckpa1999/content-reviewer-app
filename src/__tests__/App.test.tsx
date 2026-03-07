@@ -5,6 +5,18 @@ import type { ReactElement } from 'react';
 import App from '../App';
 import type { MediaEntry } from '../types';
 
+// ── Mock AuthContext ──────────────────────────────────────────────────────────
+// App tests focus on journal behaviour, not auth. We mock useAuth to always
+// return a logged-in user so the auth gate never redirects to LoginScreen.
+vi.mock('../AuthContext', () => ({
+  useAuth: vi.fn(() => ({
+    user: { id: 'test-1', firstName: 'Test', lastName: 'User', email: 'test@gmail.com', provider: 'google' },
+    logout: vi.fn(),
+    isLoading: false,
+  })),
+  getUserInitials: () => 'TU',
+}));
+
 // ── Mock react-hot-toast ──────────────────────────────────────────────────────
 // Captures the render function passed to toast() so undo can be tested.
 let capturedToastFn: ((t: { id: string }) => ReactElement) | null = null;
@@ -104,7 +116,7 @@ describe('App', () => {
     const user = userEvent.setup();
     render(<App />);
     await user.type(screen.getByPlaceholderText('Search titles…'), 'Breaking');
-    await user.click(screen.getByRole('button', { name: '' })); // × clear button
+    await user.click(screen.getByRole('button', { name: 'Clear search' }));
     expect(screen.getByText('Spirited Away')).toBeInTheDocument();
   });
 
