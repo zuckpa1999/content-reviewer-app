@@ -11,7 +11,7 @@ interface Props {
   onRemoveType: (type: string) => void;
 }
 
-const MAX_CHAR = 100;
+const MAX_CHAR = 500;
 const BUILTIN_TYPES = ['Movie', 'TV Series', 'Anime'];
 
 function countWords(text: string): number {
@@ -106,8 +106,7 @@ export default function AddEntryModal({ onSave, onClose, editEntry, customTypes,
   const validate = () => {
     const errs: Record<string, string> = {};
     if (!name.trim()) errs.name = 'Title is required.';
-    if (!dateWatched) errs.date = 'Date is required.';
-    // if (thoughts.length > MAX_CHAR) errs.thoughts = `Maximum ${MAX_CHAR} characters allowed.`;
+    if (thoughts.length > MAX_CHAR) errs.thoughts = `Maximum ${MAX_CHAR} characters allowed.`;
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
