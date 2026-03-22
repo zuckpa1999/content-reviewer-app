@@ -20,16 +20,16 @@ interface AuthContextValue {
 const MOCK_USERS: Record<AuthProvider, User> = {
   google: {
     id: 'mock-google-001',
-    firstName: 'Alex',
-    lastName: 'Morgan',
-    email: 'alex.morgan@gmail.com',
+    firstName: 'Barameerak',
+    lastName: 'Koonmongkon',
+    email: 'barameerak.koonmongkon@gmail.com',
     provider: 'google',
   },
   facebook: {
     id: 'mock-fb-001',
-    firstName: 'Jordan',
-    lastName: 'Blake',
-    email: 'jordan.blake@example.com',
+    firstName: 'Barameerak',
+    lastName: 'Koonmongkon',
+    email: 'barameerak.koonmongkon@gmail.com',
     provider: 'facebook',
   },
 };

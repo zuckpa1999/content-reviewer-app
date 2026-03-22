@@ -10,7 +10,7 @@ import AddEntryModal from './AddEntryModal';
 import DetailModal from './DetailModal';
 import EmptyState from './EmptyState';
 import LoginScreen from './LoginScreen';
-
+import { initialData } from './initialData';
 function UserMenu({ user, onLogout }: { user: User; onLogout: () => void }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -74,7 +74,7 @@ const SORT_OPTIONS: { label: string; value: SortOption }[] = [
 
 export default function App() {
   const { user, logout } = useAuth();
-  const [entries, setEntries] = useLocalStorage<MediaEntry[]>('media-journal-v1', []);
+  const [entries, setEntries] = useLocalStorage<MediaEntry[]>('media-journal-v1', initialData);
   const [customTypes, setCustomTypes] = useLocalStorage<string[]>('media-journal-custom-types', []);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editEntry, setEditEntry] = useState<MediaEntry | null>(null);
