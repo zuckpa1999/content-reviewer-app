@@ -10,6 +10,11 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
+        accent: {
+          DEFAULT: '#e50914',
+          hover:   '#f40612',
+          muted:   '#b20710',
+        },
         dark: {
           50:  '#f0f0f0',
           100: '#d4d4d4',
@@ -22,11 +27,6 @@ export default {
           800: '#141414',
           900: '#0a0a0a',
           950: '#050505',
-        },
-        accent: {
-          DEFAULT: '#e50914',
-          hover:   '#f40612',
-          muted:   '#b20710',
         }
       },
       animation: {
