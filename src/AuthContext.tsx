@@ -1,85 +1,80 @@
-import { createContext, useContext, useState } from 'react';
-
-export type AuthProvider = 'google' | 'facebook';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { supabase } from '../supabaseClient'; // Assuming you have this file
 
 export interface User {
   id: string;
+  email: string;
   firstName: string;
   lastName: string;
-  email: string;
-  provider: AuthProvider;
 }
 
-interface AuthContextValue {
+interface AuthContextType {
   user: User | null;
+  login: (provider: 'google') => Promise<void>;
+  logout: () => Promise<void>;
   isLoading: boolean;
-  login: (provider: AuthProvider) => Promise<void>;
-  logout: () => void;
 }
 
-const MOCK_USERS: Record<AuthProvider, User> = {
-  google: {
-    id: 'mock-google-001',
-    firstName: 'Barameerak',
-    lastName: 'Koonmongkon',
-    email: 'barameerak.koonmongkon@gmail.com',
-    provider: 'google',
-  },
-  facebook: {
-    id: 'mock-fb-001',
-    firstName: 'Barameerak',
-    lastName: 'Koonmongkon',
-    email: 'barameerak.koonmongkon@gmail.com',
-    provider: 'facebook',
-  },
-};
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const LS_KEY = 'mediavault-auth-user';
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+  useEffect(() => {
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          firstName: session.user.user_metadata?.full_name?.split(' ')[0] || 'User',
+          lastName: session.user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
+        });
+      }
+      setIsLoading(false);
+    };
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    try {
-      const stored = localStorage.getItem(LS_KEY);
-      return stored ? (JSON.parse(stored) as User) : null;
-    } catch {
-      return null;
-    }
-  });
-  const [isLoading, setIsLoading] = useState(false);
+    getSession();
 
-  const login = async (provider: AuthProvider) => {
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1200));
-    const newUser = MOCK_USERS[provider];
-    setUser(newUser);
-    try {
-      localStorage.setItem(LS_KEY, JSON.stringify(newUser));
-    } catch { /* silently fail */ }
-    setIsLoading(false);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          firstName: session.user.user_metadata?.full_name?.split(' ')[0] || 'User',
+          lastName: session.user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
+        });
+      } else {
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const login = async (provider: 'google') => {
+    await supabase.auth.signInWithOAuth({ provider });
   };
 
-  const logout = () => {
-    setUser(null);
-    try {
-      localStorage.removeItem(LS_KEY);
-    } catch { /* silently fail */ }
+  const logout = async () => {
+    await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export function useAuth(): AuthContextValue {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used inside <AuthProvider>');
-  return ctx;
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  return context;
 }
 
 export function getUserInitials(user: User): string {
-  return `${user.firstName[0]}`.toUpperCase();
+  return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
 }

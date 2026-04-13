@@ -1,8 +1,5 @@
-
-import { useEffect, useState } from 'react';
-import { supabase } from '../supabaseClient';
-import type { Session } from '@supabase/supabase-js';
 import { Film } from 'lucide-react';
+import { useAuth } from './AuthContext';
 function GoogleIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0 }}>
@@ -13,17 +10,6 @@ function GoogleIcon() {
     </svg>
   );
 }
-
-function Spinner() {
-  return (
-    <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0 }}>
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-    </svg>
-  );
-}
-
-
 
 // function FacebookIcon() {
 //   return (
@@ -40,114 +26,20 @@ function Spinner() {
 //       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
 //     </svg>
 //   );
-// }
+//}
 
 export default function LoginScreen() {
-  //const { login, isLoading } = useAuth();
+  const { login, isLoading } = useAuth();
 
-  // const handleLogin = (provider: AuthProvider) => {
-  //   if (!isLoading) login(provider);
-  // };
-
-  const [session, setSession] = useState<Session | null>(null);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const signUp = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-    });
-  }
-  const signOut = async () => {
-    await supabase.auth.signOut();
+  const handleLogin = (provider: 'google') => {
+    if (!isLoading) login(provider);
   };
 
-  console.log("session", session);
+  return (
+    <>
+      {/* <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} />; */}
+      {/* <button onClick={signUp}>Sign in with Google</button> */}
 
-  if (!session) {
-    return (
-      <>
-        {/* <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} />; */}
-        {/* <button onClick={signUp}>Sign in with Google</button> */}
-
-        <div
-          className="min-h-dvh bg-dark-900 flex items-center justify-center px-4"
-          style={{
-            backgroundImage:
-              'radial-gradient(ellipse 70% 40% at 50% 0%, rgba(229,9,20,0.07) 0%, transparent 70%)',
-          }}
-        >
-          <div className="w-full max-w-sm animate-scale-in">
-
-            {/* Card */}
-            <div className="bg-dark-800 rounded-2xl border border-dark-700/60 shadow-2xl shadow-black/60 overflow-hidden">
-
-              {/* Top accent stripe */}
-              <div className="h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent" />
-
-              <div className="px-8 pt-8 pb-7">
-
-                {/* Logo */}
-                <div className="flex items-center justify-center gap-2.5 mb-9">
-                  <div className="w-10 h-10 rounded-xl bg-accent shadow-lg shadow-accent/30 flex items-center justify-center">
-                    <Film className="text-white" style={{ width: '20px', height: '20px' }} />
-                  </div>
-                  <span className="font-black text-white text-2xl tracking-tight">
-                    Media<span className="text-accent">Vault</span>
-                  </span>
-                </div>
-
-                {/* Heading */}
-                <div className="text-center mb-7">
-                  <h1 className="text-xl font-bold text-white mb-1.5">Sign in to your account</h1>
-                  <p className="text-dark-400 text-sm leading-relaxed">
-                    Track your movies, series &amp; anime
-                  </p>
-                </div>
-
-                {/* Buttons */}
-                <div className="space-y-3">
-
-                  {/* Google */}
-                  <button
-                    onClick={() => signUp()}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl
-                           bg-white text-gray-800 font-semibold text-sm
-                           border border-gray-200/10 shadow-sm
-                           hover:bg-gray-50 active:scale-[0.98] transition-all duration-150
-                           focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-dark-800
-                           disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
-                  >
-                    <span className="flex items-center justify-center w-5 h-5">
-                      <GoogleIcon />
-                    </span>
-                    <span className="flex-1 text-center">Continue with Google</span>
-                  </button>
-
-
-                </div>
-
-              </div>
-
-            </div>
-          </div>
-        </div>
-      </>
-    );
-  } else {
-    return (
       <div
         className="min-h-dvh bg-dark-900 flex items-center justify-center px-4"
         style={{
@@ -155,12 +47,62 @@ export default function LoginScreen() {
             'radial-gradient(ellipse 70% 40% at 50% 0%, rgba(229,9,20,0.07) 0%, transparent 70%)',
         }}
       >
-        <div className="flex flex-col">
-          <h2>Welcome, {session?.user?.email}</h2>
-          <button onClick={signOut}>Sign out</button>
+        <div className="w-full max-w-sm animate-scale-in">
+
+          {/* Card */}
+          <div className="bg-dark-800 rounded-2xl border border-dark-700/60 shadow-2xl shadow-black/60 overflow-hidden">
+
+            {/* Top accent stripe */}
+            <div className="h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent" />
+
+            <div className="px-8 pt-8 pb-7">
+
+              {/* Logo */}
+              <div className="flex items-center justify-center gap-2.5 mb-9">
+                <div className="w-10 h-10 rounded-xl bg-accent shadow-lg shadow-accent/30 flex items-center justify-center">
+                  <Film className="text-white" style={{ width: '20px', height: '20px' }} />
+                </div>
+                <span className="font-black text-white text-2xl tracking-tight">
+                  Media<span className="text-accent">Vault</span>
+                </span>
+              </div>
+
+              {/* Heading */}
+              <div className="text-center mb-7">
+                <h1 className="text-xl font-bold text-white mb-1.5">Sign in to your account</h1>
+                <p className="text-dark-400 text-sm leading-relaxed">
+                  Track your movies, series &amp; anime
+                </p>
+              </div>
+
+              {/* Buttons */}
+              <div className="space-y-3">
+
+                {/* Google */}
+                <button
+                  onClick={() => handleLogin('google')}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl
+                         bg-white text-gray-800 font-semibold text-sm
+                         border border-gray-200/10 shadow-sm
+                         hover:bg-gray-50 active:scale-[0.98] transition-all duration-150
+                         focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-dark-800
+                         disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+                >
+                  <span className="flex items-center justify-center w-5 h-5">
+                    <GoogleIcon />
+                  </span>
+                  <span className="flex-1 text-center">Continue with Google</span>
+                </button>
+
+
+              </div>
+
+            </div>
+
+          </div>
         </div>
       </div>
-    );
-  }
+    </>
+  );
 }
 
