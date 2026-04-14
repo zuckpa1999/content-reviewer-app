@@ -12,7 +12,7 @@ import EmptyState from './EmptyState';
 import LoginScreen from './LoginScreen';
 import { initialData } from './initialData';
 import { supabase } from '../supabaseClient';
-import { format } from 'date-fns';
+import { formatToSupabaseEntry } from './lib/supabase/util';
 function UserMenu({ user, onLogout }: { user: User; onLogout: () => void }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -163,24 +163,18 @@ export default function App() {
         e.id === editEntry.id ? { ...e, ...data } : e
       ));
 
-      const formatedEntry = {
-        id: data.id,
-        name: data.name,
-        image_url: data.imageUrl,
-        date_watched: format(new Date(data.dateWatched), 'yyyy-MM-dd'),
-        rating: data.rating,
-        thoughts: data.thoughts,
-        type: data.type,
-        created_at: data.createdAt,
-        user_id: user?.id || '',
-      };
+      const response = await supabase.from('media_entries')
+        .update(formatToSupabaseEntry(data, user?.id || '')).eq('id', editEntry.id);
 
+      if (response.success) {
+        toast.success('Entry updated!');
+        setEditEntry(null);
+        setShowAddModal(false);
+      } else {
+        console.error('Error updating entry:', response.error);
+        toast.error(response.error.name);
+      }
 
-      await supabase.from('media_entries').update(formatedEntry).eq('id', editEntry.id);
-
-      toast.success('Entry updated!');
-      setEditEntry(null);
-      setShowAddModal(false);
       if (viewEntry?.id === editEntry.id) {
         setViewEntry({ ...editEntry, ...data });
       }
@@ -191,22 +185,15 @@ export default function App() {
         createdAt: new Date().toISOString(),
       };
       console.log("newEntry", newEntry);
-      const formatedEntry = {
-        id: newEntry.id,
-        name: newEntry.name,
-        image_url: newEntry.imageUrl,
-        date_watched: format(new Date(newEntry.dateWatched), 'yyyy-MM-dd'),
-        rating: newEntry.rating,
-        thoughts: newEntry.thoughts,
-        type: newEntry.type,
-        created_at: newEntry.createdAt,
-        user_id: user?.id || '',
-      };
-      console.log("formatedEntry", formatedEntry);
-      await supabase.from('media_entries').insert(formatedEntry);
-      setEntries(prev => [newEntry, ...prev]);
-      toast.success('Entry added!');
-      setShowAddModal(false);
+      const response = await supabase.from('media_entries').insert(formatToSupabaseEntry(newEntry, user?.id || ''));
+      if (response.success) {
+        setEntries(prev => [newEntry, ...prev]);
+        toast.success('Entry added!');
+        setShowAddModal(false);
+      } else {
+        console.error('Error adding entry:', response.error);
+        toast.error(response.error.name);
+      }
     }
   };
 
