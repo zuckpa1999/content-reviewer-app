@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { supabase } from '../supabaseClient'; // Assuming you have this file
+import { supabase } from '../../../supabaseClient'; // Assuming you have this file
 
 export interface User {
   id: string;

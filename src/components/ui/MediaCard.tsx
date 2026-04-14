@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { Calendar, Trash2 } from 'lucide-react';
-import type { MediaEntry } from './types';
+import type { MediaEntry } from '../../types';
 import StarRating from './StarRating';
 
 interface Props {

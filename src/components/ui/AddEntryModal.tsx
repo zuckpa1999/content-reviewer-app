@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, ImageIcon, Star, Upload, Link, Plus, Check } from 'lucide-react';
-import type { MediaEntry, ContentType } from './types';
+import type { MediaEntry, ContentType } from '../../types';
 
 interface Props {
   onSave: (entry: MediaEntry) => void;
@@ -114,7 +114,7 @@ export default function AddEntryModal({ onSave, onClose, editEntry, customTypes,
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    onSave({ name: name.trim(), imageUrl, dateWatched, rating, thoughts: thoughts.trim(), type });
+    onSave({ name: name.trim(), imageUrl, dateWatched, rating, thoughts: thoughts.trim(), type, createdAt: editEntry?.createdAt ?? new Date().toISOString(), id: editEntry?.id ?? '' });
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
