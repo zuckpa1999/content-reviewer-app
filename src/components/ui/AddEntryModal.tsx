@@ -18,16 +18,14 @@ interface Props {
   onRemoveType: (type: string) => void;
 }
 
-const MAX_THOUGHTS = 100;
-const BUILTIN_TYPES = ['Movie', 'TV Series', 'Anime'];
+const THOUGHTS_MAX_WORDS = 100;
+const BUILTIN_CONTENT_TYPES: ContentType[] = ['Movie', 'TV Series', 'Anime'];
 
 export default function AddEntryModal({ onSave, onClose, editEntry, customTypes, onAddType, onRemoveType }: Props) {
   const today = new Date().toISOString().split('T')[0];
-
   const [name, setName] = useState(editEntry?.name ?? '');
   const [dateWatched, setDate] = useState(editEntry?.dateWatched ?? today);
   const [rating, setRating] = useState(editEntry?.rating ?? 3);
-
   const [type, setType] = useState<ContentType>(editEntry?.type ?? 'Movie');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -50,17 +48,14 @@ export default function AddEntryModal({ onSave, onClose, editEntry, customTypes,
     handleThoughtsChange,
   } = useTextArea({
     initialThoughts: editEntry?.thoughts ?? '',
-    maxWords: MAX_THOUGHTS,
+    maxWords: THOUGHTS_MAX_WORDS,
   })
 
   const [addingType, setAddingType] = useState(false);
   const [newTypeName, setNewTypeName] = useState('');
   const newTypeInputRef = useRef<HTMLInputElement>(null);
-
-  const allTypes = [...BUILTIN_TYPES, ...customTypes];
-
+  const allTypes = [...BUILTIN_CONTENT_TYPES, ...customTypes];
   const firstInputRef = useRef<HTMLInputElement>(null);
-
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -105,7 +100,7 @@ export default function AddEntryModal({ onSave, onClose, editEntry, customTypes,
   const validate = () => {
     const errs: Record<string, string> = {};
     if (!name.trim()) errs.name = 'Title is required.';
-    if (countWords(thoughts) > MAX_THOUGHTS) errs.thoughts = `Maximum ${MAX_THOUGHTS} words allowed.`;
+    if (countWords(thoughts) > THOUGHTS_MAX_WORDS) errs.thoughts = `Maximum ${THOUGHTS_MAX_WORDS} words allowed.`;
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -192,7 +187,7 @@ export default function AddEntryModal({ onSave, onClose, editEntry, customTypes,
             <TypeSelector
               type={type}
               allTypes={allTypes}
-              builtinTypes={BUILTIN_TYPES}
+              builtinTypes={BUILTIN_CONTENT_TYPES}
               addingType={addingType}
               newTypeName={newTypeName}
               newTypeInputRef={newTypeInputRef}
@@ -231,7 +226,7 @@ export default function AddEntryModal({ onSave, onClose, editEntry, customTypes,
             <ThoughtsSection
               thoughts={thoughts}
               wordsLeft={wordsLeft}
-              maxWords={MAX_THOUGHTS}
+              maxWords={THOUGHTS_MAX_WORDS}
               error={errors.thoughts}
               onChange={handleThoughtsChange}
             />
