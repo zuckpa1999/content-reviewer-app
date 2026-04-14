@@ -1,10 +1,9 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
 import { Plus, Search, SlidersHorizontal, X, Film, Sparkles, LogOut, ChevronDown } from 'lucide-react';
-import type { MediaEntry, ContentType, SortOption, SupabaseEntry } from './types';
+import type { MediaEntry, ContentType, SortOption, SupabaseEntry, User } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
-import { useAuth, getUserInitials } from './components/auth/AuthContext';
-import type { User } from './components/auth/AuthContext';
+import { useAuth } from './hooks/useAuth';
 import MediaCard from './components/ui/MediaCard';
 import AddEntryModal from './components/ui/AddEntryModal';
 import DetailModal from './components/ui/DetailModal';
@@ -13,6 +12,8 @@ import LoginScreen from './components/ui/LoginScreen';
 import { initialData } from './mock/initialData';
 import { supabase } from '../supabaseClient';
 import { formatToSupabaseEntry } from './utils/util';
+import { getUserInitials } from './utils/util';
+
 function UserMenu({ user, onLogout }: { user: User; onLogout: () => void }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);

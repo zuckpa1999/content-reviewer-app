@@ -1,4 +1,4 @@
-import { MediaEntry, SupabaseEntry } from "@/types"
+import { MediaEntry, SupabaseEntry, User } from "@/types"
 import { format } from "date-fns";
 
 export function formatToSupabaseEntry(data: MediaEntry, userId: string) {
@@ -11,6 +11,10 @@ export function formatToSupabaseEntry(data: MediaEntry, userId: string) {
         thoughts: data.thoughts,
         type: data.type,
         created_at: data.createdAt,
-        user_id: userId ,
+        user_id: userId,
     } as SupabaseEntry;
 };
+
+export function getUserInitials(user: User): string {
+    return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+}

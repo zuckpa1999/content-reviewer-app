@@ -1,5 +1,5 @@
 import { Film } from 'lucide-react';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 function GoogleIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0 }}>

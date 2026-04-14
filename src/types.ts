@@ -24,3 +24,18 @@ export interface SupabaseEntry {
 };
 
 export type SortOption = 'newest' | 'oldest' | 'rating-high' | 'rating-low' | 'name-az';
+
+// Auth types
+export interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+}
+
+export interface AuthContextType {
+  user: User | null;
+  login: (provider: 'google') => Promise<void>;
+  logout: () => Promise<void>;
+  isLoading: boolean;
+}

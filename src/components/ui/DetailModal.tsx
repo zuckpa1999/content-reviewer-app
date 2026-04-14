@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { X, Calendar, Edit2, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
-import type { MediaEntry } from './types';
+import type { MediaEntry } from '../../types';
 import StarRating from './StarRating';
 
 interface Props {

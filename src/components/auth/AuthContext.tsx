@@ -1,21 +1,8 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { supabase } from '../../../supabaseClient'; // Assuming you have this file
+import { createContext, useEffect, useState, ReactNode } from 'react';
+import { supabase } from '../../../supabaseClient';
+import { User, AuthContextType } from '../../types';
 
-export interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-}
-
-interface AuthContextType {
-  user: User | null;
-  login: (provider: 'google') => Promise<void>;
-  logout: () => Promise<void>;
-  isLoading: boolean;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -69,12 +56,5 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
-  return context;
-}
 
-export function getUserInitials(user: User): string {
-  return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
-}
+
