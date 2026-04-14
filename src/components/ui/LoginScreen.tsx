@@ -37,8 +37,6 @@ export default function LoginScreen() {
 
   return (
     <>
-      {/* <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} />; */}
-      {/* <button onClick={signUp}>Sign in with Google</button> */}
 
       <div
         className="min-h-dvh bg-dark-900 flex items-center justify-center px-4"

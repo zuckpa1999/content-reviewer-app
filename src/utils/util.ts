@@ -18,3 +18,7 @@ export function formatToSupabaseEntry(data: MediaEntry, userId: string) {
 export function getUserInitials(user: User): string {
     return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
 }
+
+export function countWords(text: string): number {
+    return text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+}

@@ -473,3 +473,5 @@ export default function App() {
     </div>
   );
 }
+
+// todo - refactor. the file is too big and has too many responsibilities. split into smaller components and use context for shared state like types.
