@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
 import { Plus, Search, SlidersHorizontal, X, Film, Sparkles, LogOut, ChevronDown } from 'lucide-react';
-import type { MediaEntry, ContentType, SortOption } from './types';
+import type { MediaEntry, ContentType, SortOption, SupabaseEntry } from './types';
 import { useLocalStorage } from './useLocalStorage';
 import { useAuth, getUserInitials } from './AuthContext';
 import type { User } from './AuthContext';
@@ -11,6 +11,8 @@ import DetailModal from './DetailModal';
 import EmptyState from './EmptyState';
 import LoginScreen from './LoginScreen';
 import { initialData } from './initialData';
+import { supabase } from '../supabaseClient';
+import { format } from 'date-fns';
 function UserMenu({ user, onLogout }: { user: User; onLogout: () => void }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -86,6 +88,32 @@ export default function App() {
 
   const allTypes = useMemo(() => [...BUILTIN_TYPES, ...customTypes], [customTypes]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data, error } = await supabase.from('media_entries').select('*');
+      if (error) {
+        console.error('Error fetching data:', error);
+      }
+
+      if (data && data) {
+        console.log("data", data);
+
+        const formattedData = data.map((entry: SupabaseEntry) => ({
+          id: entry.id,
+          name: entry.name,
+          imageUrl: entry.image_url,
+          dateWatched: entry.date_watched,
+          rating: entry.rating,
+          thoughts: entry.thoughts,
+          type: entry.type,
+          createdAt: entry.created_at,
+        }));
+        setEntries(formattedData as MediaEntry[]);
+      }
+    };
+    fetchData();
+  }, []);
+
   const filterTypes = useMemo(() => [
     { label: 'All', value: 'All' as const },
     ...allTypes.map(t => ({ label: t, value: t })),
@@ -129,11 +157,27 @@ export default function App() {
   }), [entries]);
 
   /* ── Handlers ─────────────────────────────────────────────────── */
-  const handleSave = (data: Omit<MediaEntry, 'id' | 'createdAt'>) => {
+  const handleSave = async (data: MediaEntry) => {
     if (editEntry) {
       setEntries(prev => prev.map(e =>
         e.id === editEntry.id ? { ...e, ...data } : e
       ));
+
+      const formatedEntry = {
+        id: data.id,
+        name: data.name,
+        image_url: data.imageUrl,
+        date_watched: format(new Date(data.dateWatched), 'yyyy-MM-dd'),
+        rating: data.rating,
+        thoughts: data.thoughts,
+        type: data.type,
+        created_at: data.createdAt,
+        user_id: user?.id || '',
+      };
+
+
+      await supabase.from('media_entries').update(formatedEntry).eq('id', editEntry.id);
+
       toast.success('Entry updated!');
       setEditEntry(null);
       setShowAddModal(false);
@@ -146,6 +190,20 @@ export default function App() {
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
       };
+      console.log("newEntry", newEntry);
+      const formatedEntry = {
+        id: newEntry.id,
+        name: newEntry.name,
+        image_url: newEntry.imageUrl,
+        date_watched: format(new Date(newEntry.dateWatched), 'yyyy-MM-dd'),
+        rating: newEntry.rating,
+        thoughts: newEntry.thoughts,
+        type: newEntry.type,
+        created_at: newEntry.createdAt,
+        user_id: user?.id || '',
+      };
+      console.log("formatedEntry", formatedEntry);
+      await supabase.from('media_entries').insert(formatedEntry);
       setEntries(prev => [newEntry, ...prev]);
       toast.success('Entry added!');
       setShowAddModal(false);
