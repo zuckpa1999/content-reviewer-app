@@ -6,6 +6,8 @@ import { useImageUpload } from '@/hooks/useImageUpload';
 import { ImageSection } from './AddEntryModal/ImageSection';
 import { TypeSelector } from './AddEntryModal/TypeSelector';
 import { RatingSection } from './AddEntryModal/RatingSection';
+import { ThoughtsSection } from './AddEntryModal/ThoughtsSection';
+import { useTextArea } from '@/hooks/useTextArea';
 
 interface Props {
   onSave: (entry: MediaEntry) => void;
@@ -16,7 +18,7 @@ interface Props {
   onRemoveType: (type: string) => void;
 }
 
-const MAX_THOUGHTS = 500;
+const MAX_THOUGHTS = 100;
 const BUILTIN_TYPES = ['Movie', 'TV Series', 'Anime'];
 
 export default function AddEntryModal({ onSave, onClose, editEntry, customTypes, onAddType, onRemoveType }: Props) {
@@ -25,7 +27,7 @@ export default function AddEntryModal({ onSave, onClose, editEntry, customTypes,
   const [name, setName] = useState(editEntry?.name ?? '');
   const [dateWatched, setDate] = useState(editEntry?.dateWatched ?? today);
   const [rating, setRating] = useState(editEntry?.rating ?? 3);
-  const [thoughts, setThoughts] = useState(editEntry?.thoughts ?? '');
+
   const [type, setType] = useState<ContentType>(editEntry?.type ?? 'Movie');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -42,6 +44,15 @@ export default function AddEntryModal({ onSave, onClose, editEntry, customTypes,
     initialIsFile: editEntry?.imageUrl?.startsWith('data:') ?? false,
   });
 
+  const {
+    thoughts,
+    wordsLeft,
+    handleThoughtsChange,
+  } = useTextArea({
+    initialThoughts: editEntry?.thoughts ?? '',
+    maxWords: MAX_THOUGHTS,
+  })
+
   const [addingType, setAddingType] = useState(false);
   const [newTypeName, setNewTypeName] = useState('');
   const newTypeInputRef = useRef<HTMLInputElement>(null);
@@ -49,7 +60,7 @@ export default function AddEntryModal({ onSave, onClose, editEntry, customTypes,
   const allTypes = [...BUILTIN_TYPES, ...customTypes];
 
   const firstInputRef = useRef<HTMLInputElement>(null);
-  const wordsLeft = MAX_THOUGHTS - thoughts.length;
+
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -94,7 +105,7 @@ export default function AddEntryModal({ onSave, onClose, editEntry, customTypes,
   const validate = () => {
     const errs: Record<string, string> = {};
     if (!name.trim()) errs.name = 'Title is required.';
-    if (thoughts.length > MAX_THOUGHTS) errs.thoughts = `Maximum ${MAX_THOUGHTS} characters allowed.`;
+    if (countWords(thoughts) > MAX_THOUGHTS) errs.thoughts = `Maximum ${MAX_THOUGHTS} words allowed.`;
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -103,17 +114,6 @@ export default function AddEntryModal({ onSave, onClose, editEntry, customTypes,
     e.preventDefault();
     if (!validate()) return;
     onSave({ name: name.trim(), imageUrl, dateWatched, rating, thoughts: thoughts.trim(), type, createdAt: editEntry?.createdAt ?? new Date().toISOString(), id: editEntry?.id ?? '' });
-  };
-
-  const handleThoughtsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const val = e.target.value;
-    const words = countWords(val);
-    if (words > MAX_THOUGHTS) {
-      const truncated = val.trim().split(/\s+/).slice(0, MAX_THOUGHTS).join(' ');
-      setThoughts(truncated);
-    } else {
-      setThoughts(val);
-    }
   };
 
   return (
@@ -228,28 +228,13 @@ export default function AddEntryModal({ onSave, onClose, editEntry, customTypes,
               onRatingChange={setRating}
             />
 
-            {/* Thoughts */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label htmlFor="thoughts" className="block text-sm font-medium text-dark-200">
-                  Thoughts
-                </label>
-                <span className={`text-xs font-medium tabular-nums ${wordsLeft <= 10 ? 'text-red-400' : 'text-dark-400'}`}>
-                  {wordsLeft} / {MAX_THOUGHTS}
-                </span>
-              </div>
-              <textarea
-                id="thoughts"
-                rows={4}
-                value={thoughts}
-                onChange={handleThoughtsChange}
-                placeholder="Share your thoughts about this content…"
-                className={`w-full px-4 py-3 rounded-xl bg-dark-700 border text-white placeholder:text-dark-400 text-sm
-                            focus:outline-none focus:ring-1 transition-colors resize-none leading-relaxed
-                            ${errors.thoughts ? 'border-red-500 focus:border-red-500 focus:ring-red-500/40' : 'border-dark-600 focus:border-accent/60 focus:ring-accent/40'}`}
-              />
-              {errors.thoughts && <p className="text-red-400 text-xs">{errors.thoughts}</p>}
-            </div>
+            <ThoughtsSection
+              thoughts={thoughts}
+              wordsLeft={wordsLeft}
+              maxWords={MAX_THOUGHTS}
+              error={errors.thoughts}
+              onChange={handleThoughtsChange}
+            />
           </div>
 
           {/* Footer */}
