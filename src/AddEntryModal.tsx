@@ -3,7 +3,7 @@ import { X, ImageIcon, Star, Upload, Link, Plus, Check } from 'lucide-react';
 import type { MediaEntry, ContentType } from './types';
 
 interface Props {
-  onSave: (entry: Omit<MediaEntry, 'id' | 'createdAt'>) => void;
+  onSave: (entry: MediaEntry) => void;
   onClose: () => void;
   editEntry?: MediaEntry | null;
   customTypes: string[];
