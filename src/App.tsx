@@ -197,7 +197,7 @@ export default function App() {
     }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     const idx = entries.findIndex(e => e.id === id);
     const deleted = entries[idx];
 
@@ -212,26 +212,32 @@ export default function App() {
       });
     };
 
-    toast((t) => (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <span>Entry deleted</span>
-        <button
-          onClick={() => { restore(); toast.dismiss(t.id); }}
-          style={{
-            background: '#e50914',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '6px',
-            padding: '4px 10px',
-            fontSize: '13px',
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
-          Undo
-        </button>
-      </div>
-    ), { duration: 5000 });
+    const response = await supabase.from('media_entries').delete().eq('id', id);
+    if (response.success) {
+      toast((t) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span>Entry deleted</span>
+          <button
+            onClick={() => { restore(); toast.dismiss(t.id); }}
+            style={{
+              background: '#e50914',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '6px',
+              padding: '4px 10px',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Undo
+          </button>
+        </div>
+      ), { duration: 5000 });
+    } else {
+      console.error('Error deleting entry:', response.error);
+      toast.error(response.error.name);
+    }
   };
 
   const handleEdit = (entry: MediaEntry) => {
