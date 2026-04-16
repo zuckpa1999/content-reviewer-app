@@ -54,6 +54,7 @@ export function ImageSection({
                         onClick={() => onSourceSwitch('file')}
                         className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-medium transition-colors
                         ${imageSource === 'file' ? 'bg-accent text-white' : 'text-dark-300 hover:text-white'}`}
+                        disabled
                     >
                         <Upload className="w-3.5 h-3.5" /> Upload
                     </button>

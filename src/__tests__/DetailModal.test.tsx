@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import DetailModal from '../DetailModal';
+import DetailModal from '../components/ui/DetailModal';
 import type { MediaEntry } from '../types';
 
 const mockEntry: MediaEntry = {

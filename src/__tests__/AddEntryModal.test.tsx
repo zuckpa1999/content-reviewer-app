@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import AddEntryModal from '../AddEntryModal';
+import AddEntryModal from '../components/ui/AddEntryModal';
 import type { MediaEntry } from '../types';
 
 const defaultProps = {

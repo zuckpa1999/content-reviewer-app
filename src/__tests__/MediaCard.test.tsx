@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import MediaCard from '../MediaCard';
+import MediaCard from '../components/ui/MediaCard';
 import type { MediaEntry } from '../types';
 
 const mockEntry: MediaEntry = {
