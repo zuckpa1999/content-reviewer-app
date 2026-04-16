@@ -43,5 +43,5 @@ jobs:
       - name: Build app
         run: npm run build
 
-      - name: Deploy dist to Vercel (Production)
-        run: npx vercel@latest deploy ./dist --prod --token="${VERCEL_TOKEN}" --yes
+      - name: Deploy to Vercel (Production)
+        run: npx vercel@latest deploy --prod --token="${VERCEL_TOKEN}" --yes
