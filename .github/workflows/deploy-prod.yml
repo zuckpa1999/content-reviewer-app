@@ -1,12 +1,12 @@
-name: Deploy Dev
+name: Deploy Production
 
 on:
   push:
     branches:
-      - dev
+      - main
 
 concurrency:
-  group: deploy-dev-${{ github.ref }}
+  group: deploy-prod-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -14,9 +14,9 @@ permissions:
 
 jobs:
   test-build-deploy:
-    name: Test, Build, Deploy (Dev)
+    name: Test, Build, Deploy (Production)
     runs-on: ubuntu-latest
-    environment: dev
+    environment: Production
     env:
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
@@ -43,5 +43,5 @@ jobs:
       - name: Build app
         run: npm run build
 
-      - name: Deploy dist to Vercel (Dev)
+      - name: Deploy dist to Vercel (Production)
         run: npx vercel@latest deploy ./dist --prod --token="${VERCEL_TOKEN}" --yes
