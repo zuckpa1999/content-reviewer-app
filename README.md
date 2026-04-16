@@ -1,50 +1,80 @@
-# React + TypeScript + Vite
+# MediaVault (React + TypeScript + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+MediaVault is a Vite + React app for tracking movies, TV series, and anime with ratings and notes.
 
-Currently, two official plugins are available:
+## Local setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. Install dependencies:
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+npm ci
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+2. Create your environment file from the example:
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+```bash
+cp .env.example .env
 ```
+
+3. Fill in required vars in `.env`:
+
+```env
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_PUBLISHABLE_KEY=...
+```
+
+4. Run the app:
+
+```bash
+npm run dev
+```
+
+## Scripts
+
+- `npm run dev` - start local dev server
+- `npm run test:run` - run unit + integration tests (Vitest)
+- `npm run build` - type-check + production build
+- `npm run lint` - lint source files
+- `npm run cy:open` - open Cypress
+- `npm run cy:run` - run Cypress E2E
+
+## CI/CD overview
+
+This repo now uses two GitHub Actions deployment pipelines:
+
+- **Dev pipeline**: `.github/workflows/deploy-dev.yml`
+  - Trigger: push to `develop`
+  - GitHub Environment: `dev`
+  - Flow: `npm ci` -> `npm run test:run` -> `npm run build` -> deploy to Vercel preview
+
+- **Production pipeline**: `.github/workflows/deploy-prod.yml`
+  - Trigger: push to `main`
+  - GitHub Environment: `production`
+  - Flow: `npm ci` -> `npm run test:run` -> `npm run build` -> deploy to Vercel production
+
+Both workflows have concurrency enabled to avoid overlapping deployments.
+
+## Required GitHub Environments + secrets
+
+Create two environments in GitHub:
+
+- `dev`
+- `production`
+
+Add these secrets in **both** environments:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
+
+## Vercel notes
+
+- Deployments are done with Vercel CLI from GitHub Actions.
+- Dev uses preview deploy (`vercel deploy ./dist`).
+- Production uses prod deploy (`vercel deploy ./dist --prod`).
+
+## Important
+
+If tests are failing in your repo, deployment will stop before build/deploy (by design).
