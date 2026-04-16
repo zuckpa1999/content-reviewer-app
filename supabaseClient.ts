@@ -7,7 +7,7 @@ const isCypress =
 // Cypress E2E should be able to run without a real Supabase backend/session.
 // This avoids relying on auth state + network calls when the user is just running `cypress open`.
 let supabaseImpl: any;
-
+console.log('Is Cypress:', isCypress);
 if (isCypress) {
   const cypressSession = {
     user: {
@@ -18,7 +18,7 @@ if (isCypress) {
   };
 
   const mockSubscription = {
-    unsubscribe: () => {},
+    unsubscribe: () => { },
   };
 
   const mockFrom = () => ({
@@ -49,7 +49,11 @@ if (isCypress) {
   const supabaseAnonKey =
     import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
     import.meta.env.VITE_SUPABASE_ANON_KEY;
-
+  console.log("import.meta.env", import.meta.env)
+  console.log("import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY", import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY)
+  console.log("import.meta.env.VITE_SUPABASE_ANON_KEY", import.meta.env.VITE_SUPABASE_ANON_KEY)
+  console.log('Supabase URL:', supabaseUrl);
+  console.log('Supabase Anon Key:', supabaseAnonKey);
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error(
       'Missing Supabase environment variables. Check your .env file.',
