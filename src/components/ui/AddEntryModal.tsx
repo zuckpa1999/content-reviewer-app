@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import type { MediaEntry, ContentType } from '../../types';
-import { countWords } from '@/utils/util';
-import { useImageUpload } from '@/hooks/useImageUpload';
+import { countWords } from '../../utils/util';
+import { useImageUpload } from '../../hooks/useImageUpload';
 import { ImageSection } from './AddEntryModal/ImageSection';
 import { TypeSelector } from './AddEntryModal/TypeSelector';
 import { RatingSection } from './AddEntryModal/RatingSection';
 import { ThoughtsSection } from './AddEntryModal/ThoughtsSection';
-import { useTextArea } from '@/hooks/useTextArea';
+import { useTextArea } from '../../hooks/useTextArea';
 
 interface Props {
   onSave: (entry: MediaEntry) => void;

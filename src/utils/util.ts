@@ -1,4 +1,4 @@
-import { MediaEntry, SupabaseEntry, User } from "@/types"
+import { MediaEntry, SupabaseEntry, User } from "../types"
 import { format } from "date-fns";
 
 export function formatToSupabaseEntry(data: MediaEntry, userId: string) {

@@ -8,7 +8,7 @@ import type { MediaEntry } from '../types';
 // ── Mock AuthContext ──────────────────────────────────────────────────────────
 // App tests focus on journal behaviour, not auth. We mock useAuth to always
 // return a logged-in user so the auth gate never redirects to LoginScreen.
-vi.mock('../AuthContext', () => ({
+vi.mock('../hooks/useAuth', () => ({
   useAuth: vi.fn(() => ({
     user: { id: 'test-1', firstName: 'Test', lastName: 'User', email: 'test@gmail.com', provider: 'google' },
     logout: vi.fn(),
@@ -29,11 +29,16 @@ vi.mock('react-hot-toast', () => {
     }),
     {
       success: vi.fn(),
+      error: vi.fn(),
       dismiss: vi.fn(),
     }
   );
   return { default: toast, toast, Toaster: () => null };
 });
+
+vi.mock('../mock/initialData', () => ({
+  initialData: [],
+}));
 
 // ── Shared fixtures ───────────────────────────────────────────────────────────
 const entry1: MediaEntry = {
@@ -197,10 +202,10 @@ describe('App', () => {
 
   // ── Add entry ─────────────────────────────────────────────────
 
-  it('opens the add modal when "Add Your First Entry" is clicked', async () => {
+  it('opens the add modal when "Add Entry" is clicked', async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole('button', { name: 'Add Your First Entry' }));
+    await user.click(screen.getByRole('button', { name: 'Add Entry' }));
     expect(screen.getByText('Add New Entry')).toBeInTheDocument();
   });
 

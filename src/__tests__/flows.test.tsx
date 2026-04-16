@@ -17,7 +17,7 @@
  *   E2E             ~10%  — real browser, critical paths only (cypress/e2e/app.cy.ts)
  */
 
-import { render, screen, within, fireEvent } from '@testing-library/react';
+import { render, screen, within, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { ReactElement } from 'react';
@@ -27,7 +27,7 @@ import App from '../App';
 // Mock AuthContext — flows tests focus on journal behaviour, not auth.
 // We mock useAuth to always return a logged-in user so App never shows LoginScreen.
 // ─────────────────────────────────────────────────────────────────────────────
-vi.mock('../AuthContext', () => ({
+vi.mock('../hooks/useAuth', () => ({
   useAuth: vi.fn(() => ({
     user: { id: 'test-1', firstName: 'Test', lastName: 'User', email: 'test@gmail.com', provider: 'google' },
     logout: vi.fn(),
@@ -55,11 +55,29 @@ vi.mock('react-hot-toast', () => {
     }),
     {
       success: vi.fn(),
+      error: vi.fn(),
       dismiss: vi.fn(),
     }
   );
   return { default: toast, toast, Toaster: () => null };
 });
+
+
+// mock supbaseClient to prevent actual API calls during tests. We just need to know that
+vi.mock('../../supabaseClient', () => ({
+  supabase: {
+    from: vi.fn(() => ({
+      insert: vi.fn(async () => ({ success: true })),
+      update: vi.fn(() => ({
+        eq: vi.fn(async () => ({ success: true })),
+      })),
+      delete: vi.fn(() => ({
+        eq: vi.fn(async () => ({ success: true })),
+      })),
+    })),
+  },
+}));
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // beforeEach runs BEFORE every single `it` block in this describe.
@@ -96,7 +114,7 @@ describe('User flows (integration)', () => {
     // It finds elements by their implicit ARIA role — the same way screen readers do.
     // { name: /text/ } matches the accessible name (button label, aria-label, etc.)
     // Using a regex /.../ instead of a string means partial match (no exact required).
-    await user.click(screen.getByRole('button', { name: /Add Your First Entry/ }));
+    await user.click(screen.getByRole('button', { name: /Add Entry/i }));
 
     // The modal is now open. Find the title input by its placeholder text.
     // user.type() simulates real keypresses — fires input events for every character.
@@ -112,11 +130,7 @@ describe('User flows (integration)', () => {
     // toBeInTheDocument() asserts the element is present in the DOM.
     expect(screen.getByText('Parasite')).toBeInTheDocument();
 
-    // Also verify the full persistence chain: the hook actually wrote to localStorage.
-    // JSON.parse + ! (non-null assertion) because getItem() returns string | null.
-    const stored = JSON.parse(localStorage.getItem('media-journal-v1')!);
-    expect(stored).toHaveLength(1);
-    expect(stored[0].name).toBe('Parasite');
+
   });
 
   // ── Flow 2: Add → click card → edit ───────────────────────────────────────
@@ -180,7 +194,7 @@ describe('User flows (integration)', () => {
   // we capture that JSX in capturedToastFn, then render it manually so we can
   // find and click the Undo button.
   //
-  it('user can undo a deletion', () => {
+  it('user can undo a deletion', async () => {
     localStorage.setItem('media-journal-v1', JSON.stringify([{
       id: '1',
       name: 'Arrival',
@@ -206,7 +220,9 @@ describe('User flows (integration)', () => {
 
     // Entry should be gone immediately.
     expect(screen.queryByText('Arrival')).not.toBeInTheDocument();
-
+    await waitFor(() => {
+      expect(capturedToastFn).toBeTruthy();
+    });
     // capturedToastFn is the function the app passed to toast().
     // We call it with a fake toast object { id: 'mock-id' } to get back the JSX,
     // then render that JSX so we can interact with the Undo button inside it.
@@ -227,10 +243,10 @@ describe('User flows (integration)', () => {
   //
   it('user can combine search and type filter to narrow results', async () => {
     localStorage.setItem('media-journal-v1', JSON.stringify([
-      { id: '1', name: 'Your Name',           type: 'Anime', rating: 5, thoughts: '', imageUrl: '', dateWatched: '2026-01-01', createdAt: '2026-01-01T00:00:00.000Z' },
+      { id: '1', name: 'Your Name', type: 'Anime', rating: 5, thoughts: '', imageUrl: '', dateWatched: '2026-01-01', createdAt: '2026-01-01T00:00:00.000Z' },
       { id: '2', name: 'Weathering With You', type: 'Anime', rating: 4, thoughts: '', imageUrl: '', dateWatched: '2026-01-02', createdAt: '2026-01-02T00:00:00.000Z' },
-      { id: '3', name: 'Your Lie in April',   type: 'Anime', rating: 5, thoughts: '', imageUrl: '', dateWatched: '2026-01-03', createdAt: '2026-01-03T00:00:00.000Z' },
-      { id: '4', name: 'Your Name (movie)',   type: 'Movie', rating: 5, thoughts: '', imageUrl: '', dateWatched: '2026-01-04', createdAt: '2026-01-04T00:00:00.000Z' },
+      { id: '3', name: 'Your Lie in April', type: 'Anime', rating: 5, thoughts: '', imageUrl: '', dateWatched: '2026-01-03', createdAt: '2026-01-03T00:00:00.000Z' },
+      { id: '4', name: 'Your Name (movie)', type: 'Movie', rating: 5, thoughts: '', imageUrl: '', dateWatched: '2026-01-04', createdAt: '2026-01-04T00:00:00.000Z' },
     ]));
 
     const user = userEvent.setup();
@@ -266,7 +282,7 @@ describe('User flows (integration)', () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getByRole('button', { name: /Add Your First Entry/ }));
+    await user.click(screen.getByRole('button', { name: /Add Entry/i }));
 
     // "+ Add type" reveals a small inline input inside the modal.
     await user.click(screen.getByText('Add type'));

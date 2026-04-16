@@ -1,4 +1,4 @@
-import { countWords } from "@/utils/util";
+import { countWords } from "../utils/util";
 import { useEffect, useState } from "react";
 
 export interface UseTextAreaReturn {
