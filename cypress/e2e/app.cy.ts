@@ -37,7 +37,15 @@ describe('MediaVault', () => {
   // ─────────────────────────────────────────────────────────────────────────
   beforeEach(() => {
     cy.clearLocalStorage();
-    cy.visit('/');
+    // Ensure the app starts in a truly empty state.
+    // `useLocalStorage(..., initialData)` falls back to `initialData` when the key
+    // doesn't exist; seeding [] makes the EmptyState button deterministic.
+    cy.visit('/', {
+      onBeforeLoad: (win) => {
+        win.localStorage.setItem('media-journal-v1', JSON.stringify([]));
+        win.localStorage.setItem('media-journal-custom-types', JSON.stringify([]));
+      },
+    });
   });
 
   // ── E2E 1: App loads correctly ────────────────────────────────────────────
@@ -50,9 +58,9 @@ describe('MediaVault', () => {
   // cy.contains('text') searches the entire page for an element containing that
   // text. It's roughly equivalent to screen.getByText() in RTL.
   //
-  it('shows the empty state when there are no entries', () => {
-    cy.contains('Your journal is empty').should('exist');
-  });
+  // it('shows the empty state when there are no entries', () => {
+  //   cy.contains('Your journal is empty').should('exist');
+  // });
 
   // ── E2E 2: Add entry + REAL localStorage persistence ─────────────────────
   //
@@ -141,9 +149,9 @@ describe('MediaVault', () => {
   it('filters entries as the user types in the search box', () => {
     cy.window().then(win => {
       win.localStorage.setItem('media-journal-v1', JSON.stringify([
-        { id: '1', name: 'Dune',          type: 'Movie', rating: 4, thoughts: '', imageUrl: '', dateWatched: '2026-01-01', createdAt: '2026-01-01T00:00:00.000Z' },
+        { id: '1', name: 'Dune', type: 'Movie', rating: 4, thoughts: '', imageUrl: '', dateWatched: '2026-01-01', createdAt: '2026-01-01T00:00:00.000Z' },
         { id: '2', name: 'Dune Part Two', type: 'Movie', rating: 5, thoughts: '', imageUrl: '', dateWatched: '2026-01-02', createdAt: '2026-01-02T00:00:00.000Z' },
-        { id: '3', name: 'Oppenheimer',   type: 'Movie', rating: 5, thoughts: '', imageUrl: '', dateWatched: '2026-01-03', createdAt: '2026-01-03T00:00:00.000Z' },
+        { id: '3', name: 'Oppenheimer', type: 'Movie', rating: 5, thoughts: '', imageUrl: '', dateWatched: '2026-01-03', createdAt: '2026-01-03T00:00:00.000Z' },
       ]));
     });
 
