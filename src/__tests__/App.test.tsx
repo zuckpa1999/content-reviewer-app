@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { render, screen, fireEvent, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { ReactElement } from 'react';
@@ -16,6 +16,28 @@ vi.mock('../hooks/useAuth', () => ({
   })),
   getUserInitials: () => 'TU',
 }));
+
+// ── Mock Supabase client ───────────────────────────────────────────────────────
+// `src/App.tsx` fetches entries on mount; we mock Supabase so tests don't need
+// env vars and so the fetch doesn't overwrite localStorage fixtures.
+vi.mock('../../supabaseClient', () => {
+  return {
+    supabase: {
+      from: vi.fn(() => {
+        return {
+          select: vi.fn().mockResolvedValue({ data: null, error: null }),
+          insert: vi.fn().mockResolvedValue({ success: true }),
+          update: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ success: true }),
+          }),
+          delete: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ success: true }),
+          }),
+        };
+      }),
+    },
+  };
+});
 
 // ── Mock react-hot-toast ──────────────────────────────────────────────────────
 // Captures the render function passed to toast() so undo can be tested.
@@ -181,20 +203,26 @@ describe('App', () => {
     expect(screen.queryByText('Breaking Bad')).not.toBeInTheDocument();
   });
 
-  it('shows the undo toast after deletion', () => {
+  it('shows the undo toast after deletion', async () => {
     localStorage.setItem('media-journal-v1', JSON.stringify([entry1]));
     render(<App />);
     fireEvent.click(screen.getByLabelText('Delete entry'));
-    expect(capturedToastFn).not.toBeNull();
+    await waitFor(() => {
+      expect(capturedToastFn).not.toBeNull();
+    });
   });
 
-  it('restores the entry when Undo is clicked in the toast', () => {
+  it('restores the entry when Undo is clicked in the toast', async () => {
     localStorage.setItem('media-journal-v1', JSON.stringify([entry1]));
     render(<App />);
     fireEvent.click(screen.getByLabelText('Delete entry'));
     expect(screen.queryByText('Breaking Bad')).not.toBeInTheDocument();
 
     // Render the toast content and click Undo
+    await waitFor(() => {
+      expect(capturedToastFn).not.toBeNull();
+      expect(typeof capturedToastFn).toBe('function');
+    });
     const toastContent = render(capturedToastFn!({ id: 'mock-id' }));
     fireEvent.click(toastContent.getByText('Undo'));
     expect(screen.getByText('Breaking Bad')).toBeInTheDocument();

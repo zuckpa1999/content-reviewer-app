@@ -67,6 +67,7 @@ vi.mock('react-hot-toast', () => {
 vi.mock('../../supabaseClient', () => ({
   supabase: {
     from: vi.fn(() => ({
+      select: vi.fn(async () => ({ data: null, error: null })),
       insert: vi.fn(async () => ({ success: true })),
       update: vi.fn(() => ({
         eq: vi.fn(async () => ({ success: true })),
