@@ -77,7 +77,7 @@ const SORT_OPTIONS: { label: string; value: SortOption }[] = [
 
 export default function App() {
   const { user, logout } = useAuth();
-  const [entries, setEntries] = useLocalStorage<MediaEntry[]>('media-journal-v1', initialData);
+  const [entries, setEntries] = useLocalStorage<MediaEntry[]>('media-journal-v1', []);
   const [customTypes, setCustomTypes] = useLocalStorage<string[]>('media-journal-custom-types', []);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editEntry, setEditEntry] = useState<MediaEntry | null>(null);
@@ -96,7 +96,7 @@ export default function App() {
         console.error('Error fetching data:', error);
       }
 
-      if (data && data) {
+      if (data && data.length > 0) {
         console.log("data", data);
 
         const formattedData = data.map((entry: SupabaseEntry) => ({
@@ -422,7 +422,22 @@ export default function App() {
         </div>
 
         {/* ── Content grid ─────────────────────────────────────── */}
-        {filtered.length > 0 ? (
+        {entries.length === 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+            {/* skeleton loaders */}
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-gray-200 animate-pulse rounded-xl relative overflow-hidden aspect-[2/3] w-full"
+              >
+                <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+
+                </img>
+              </div>
+
+            ))}
+          </div>
+        ) : filtered.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
             {filtered.map(entry => (
               <MediaCard
