@@ -94,8 +94,11 @@ describe('App', () => {
 
   // ── Empty state ───────────────────────────────────────────────
 
-  it('shows the empty state when there are no entries', () => {
+  it('shows the empty state when there are no entries',async () => {
     render(<App />);
+    await waitFor(() => {
+      expect(screen.getByText('Your journal is empty')).toBeInTheDocument();
+    });
     expect(screen.getByText('Your journal is empty')).toBeInTheDocument();
   });
 
@@ -106,9 +109,13 @@ describe('App', () => {
 
   // ── Populated state ───────────────────────────────────────────
 
-  it('renders entries loaded from localStorage', () => {
+  it('renders entries loaded from localStorage', async () => {
     localStorage.setItem('media-journal-v1', JSON.stringify([entry1, entry2]));
     render(<App />);
+    await waitFor(() => {
+      expect(screen.getByText('Breaking Bad')).toBeInTheDocument();
+      expect(screen.getByText('Spirited Away')).toBeInTheDocument();
+    });
     expect(screen.getByText('Breaking Bad')).toBeInTheDocument();
     expect(screen.getByText('Spirited Away')).toBeInTheDocument();
   });
@@ -196,9 +203,12 @@ describe('App', () => {
 
   // ── Delete & Undo ─────────────────────────────────────────────
 
-  it('removes an entry when its delete button is clicked', () => {
+  it('removes an entry when its delete button is clicked', async () => {
     localStorage.setItem('media-journal-v1', JSON.stringify([entry1]));
     render(<App />);
+    await waitFor(() => {
+      expect(screen.getByText('Breaking Bad')).toBeInTheDocument();
+    });
     fireEvent.click(screen.getByLabelText('Delete entry'));
     expect(screen.queryByText('Breaking Bad')).not.toBeInTheDocument();
   });
@@ -206,6 +216,9 @@ describe('App', () => {
   it('shows the undo toast after deletion', async () => {
     localStorage.setItem('media-journal-v1', JSON.stringify([entry1]));
     render(<App />);
+    await waitFor(() => {
+      expect(screen.getByLabelText('Delete entry')).toBeInTheDocument();
+    });
     fireEvent.click(screen.getByLabelText('Delete entry'));
     await waitFor(() => {
       expect(capturedToastFn).not.toBeNull();
@@ -215,6 +228,9 @@ describe('App', () => {
   it('restores the entry when Undo is clicked in the toast', async () => {
     localStorage.setItem('media-journal-v1', JSON.stringify([entry1]));
     render(<App />);
+    await waitFor(() => {
+      expect(screen.getByLabelText('Delete entry')).toBeInTheDocument();
+    });
     fireEvent.click(screen.getByLabelText('Delete entry'));
     expect(screen.queryByText('Breaking Bad')).not.toBeInTheDocument();
 
@@ -240,6 +256,9 @@ describe('App', () => {
   it('adds a new entry when the form is submitted', async () => {
     const user = userEvent.setup();
     render(<App />);
+    await waitFor(() => {
+      expect(screen.getByText('Add Your First Entry')).toBeInTheDocument();
+    });
     await user.click(screen.getByRole('button', { name: 'Add Your First Entry' }));
     const dialog = screen.getByRole('dialog');
     await user.type(screen.getByPlaceholderText(/Breaking Bad/), 'Inception');
@@ -253,6 +272,9 @@ describe('App', () => {
     localStorage.setItem('media-journal-v1', JSON.stringify([entry1]));
     const user = userEvent.setup();
     render(<App />);
+    await waitFor(() => {
+      expect(screen.getByText('Breaking Bad')).toBeInTheDocument();
+    });
     await user.click(screen.getByRole('article'));
     expect(screen.getByText('Edit Entry')).toBeInTheDocument();
   });
@@ -261,6 +283,9 @@ describe('App', () => {
     localStorage.setItem('media-journal-v1', JSON.stringify([entry1]));
     const user = userEvent.setup();
     render(<App />);
+    await waitFor(() => {
+      expect(screen.getByRole('article')).toBeInTheDocument();
+    });
     await user.click(screen.getByRole('article'));
     await user.click(screen.getByText('Edit Entry'));
     expect(screen.getByDisplayValue('Breaking Bad')).toBeInTheDocument();

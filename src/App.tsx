@@ -9,7 +9,6 @@ import AddEntryModal from './components/ui/AddEntryModal';
 import DetailModal from './components/ui/DetailModal';
 import EmptyState from './components/ui/EmptyState';
 import LoginScreen from './components/ui/LoginScreen';
-import { initialData } from './mock/initialData';
 import { supabase } from '../supabaseClient';
 import { formatToSupabaseEntry } from './utils/util';
 import { getUserInitials } from './utils/util';
@@ -86,11 +85,12 @@ export default function App() {
   const [filterType, setFilterType] = useState<ContentType | 'All'>('All');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [showFilters, setShowFilters] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(false);
   const allTypes = useMemo(() => [...BUILTIN_TYPES, ...customTypes], [customTypes]);
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       const { data, error } = await supabase.from('media_entries').select('*');
       if (error) {
         console.error('Error fetching data:', error);
@@ -111,6 +111,7 @@ export default function App() {
         }));
         setEntries(formattedData as MediaEntry[]);
       }
+      setIsLoading(false);
     };
     fetchData();
   }, []);
@@ -422,8 +423,9 @@ export default function App() {
         </div>
 
         {/* ── Content grid ─────────────────────────────────────── */}
-        {entries.length === 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+        {isLoading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4"
+            data-testid="skeleton-item">
             {/* skeleton loaders */}
             {Array.from({ length: 7 }).map((_, i) => (
               <div

@@ -160,7 +160,9 @@ describe('User flows (integration)', () => {
 
     const user = userEvent.setup();
     render(<App />);
-
+    await waitFor(() => {
+      expect(screen.getByRole('article')).toBeInTheDocument();
+    });
     // Click the card. MediaCard renders with role="article".
     await user.click(screen.getByRole('article'));
 
@@ -217,6 +219,9 @@ describe('User flows (integration)', () => {
     // flushes all state updates synchronously before the next line runs.
     // Raw .click() (native DOM) skips act(), causing the "not wrapped in act()"
     // warning and a race where the DOM hasn't updated yet.
+    await waitFor(() => {
+      expect(screen.getByLabelText('Delete entry')).toBeInTheDocument();
+    });
     fireEvent.click(screen.getByLabelText('Delete entry'));
 
     // Entry should be gone immediately.
