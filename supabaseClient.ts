@@ -39,7 +39,15 @@ if (isCypress) {
         cb?.('SIGNED_IN', cypressSession);
         return { data: { subscription: mockSubscription } };
       },
-      signInWithOAuth: async () => ({}),
+      //signInWithOAuth: async () => ({}),
+      signInWithOAuth: async () => {
+        return supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: window.location.origin
+          }
+        })
+      },
       signOut: async () => ({}),
     },
   };
