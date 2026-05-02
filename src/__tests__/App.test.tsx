@@ -58,9 +58,9 @@ vi.mock('react-hot-toast', () => {
   return { default: toast, toast, Toaster: () => null };
 });
 
-vi.mock('../mock/initialData', () => ({
-  initialData: [],
-}));
+// vi.mock('../mock/initialData', () => ({
+//   initialData: [],
+// }));
 
 // ── Shared fixtures ───────────────────────────────────────────────────────────
 const entry1: MediaEntry = {
@@ -94,7 +94,7 @@ describe('App', () => {
 
   // ── Empty state ───────────────────────────────────────────────
 
-  it('shows the empty state when there are no entries',async () => {
+  it('shows the empty state when there are no entries', async () => {
     render(<App />);
     await waitFor(() => {
       expect(screen.getByText('Your journal is empty')).toBeInTheDocument();
