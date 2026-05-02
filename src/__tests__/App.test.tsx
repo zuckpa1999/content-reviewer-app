@@ -58,10 +58,6 @@ vi.mock('react-hot-toast', () => {
   return { default: toast, toast, Toaster: () => null };
 });
 
-// vi.mock('../mock/initialData', () => ({
-//   initialData: [],
-// }));
-
 // ── Shared fixtures ───────────────────────────────────────────────────────────
 const entry1: MediaEntry = {
   id: '1',
