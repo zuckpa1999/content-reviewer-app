@@ -1,7 +1,7 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
-import { Plus, Search, SlidersHorizontal, X, Film, Sparkles, LogOut, ChevronDown } from 'lucide-react';
-import type { MediaEntry, ContentType, SortOption, SupabaseEntry, User } from './types';
+import { Plus, Search, SlidersHorizontal, X, Film, Sparkles } from 'lucide-react';
+import type { MediaEntry, ContentType, SortOption, SupabaseEntry } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { useAuth } from './hooks/useAuth';
 import MediaCard from './components/ui/MediaCard';
@@ -11,68 +11,8 @@ import EmptyState from './components/ui/EmptyState';
 import LoginScreen from './components/ui/LoginScreen';
 import { supabase } from '../supabaseClient';
 import { formatToSupabaseEntry } from './utils/util';
-import { getUserInitials } from './utils/util';
-
-function UserMenu({ user, onLogout }: { user: User; onLogout: () => void }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
-  return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={() => setOpen(p => !p)}
-        className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-dark-800
-                   transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40"
-        aria-label="Account menu"
-      >
-        <div className="w-7 h-7 rounded-full bg-accent ring-2 ring-accent/25 flex items-center justify-center
-                        text-white text-xs font-black select-none flex-shrink-0">
-          {getUserInitials(user)}
-        </div>
-        <span className="hidden sm:block text-sm font-medium text-dark-100">{user.firstName}</span>
-        <ChevronDown className={`hidden sm:block w-3.5 h-3.5 text-dark-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
-      </button>
-
-      {open && (
-        <div className="absolute right-0 top-full mt-2 w-56 bg-dark-800 rounded-xl border border-dark-700
-                        shadow-xl shadow-black/50 overflow-hidden animate-scale-in z-50">
-          <div className="px-4 py-3.5 border-b border-dark-700/80">
-            <p className="text-white text-sm font-semibold">{user.firstName} {user.lastName}</p>
-            <p className="text-dark-400 text-xs mt-0.5 truncate">{user.email}</p>
-          </div>
-          <div className="p-1.5">
-            <button
-              onClick={() => { onLogout(); setOpen(false); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-dark-300
-                         hover:text-white hover:bg-dark-700 transition-colors text-left"
-            >
-              <LogOut className="w-4 h-4 flex-shrink-0" />
-              Sign out
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-const BUILTIN_TYPES = ['Movie', 'TV Series', 'Anime'];
-
-const SORT_OPTIONS: { label: string; value: SortOption }[] = [
-  { label: 'Newest first', value: 'newest' },
-  { label: 'Oldest first', value: 'oldest' },
-  { label: 'Highest rated', value: 'rating-high' },
-  { label: 'Lowest rated', value: 'rating-low' },
-  { label: 'A → Z', value: 'name-az' },
-];
+import UserMenu from './components/ui/UserMenu';
+import { BUILTIN_TYPES, SORT_OPTIONS } from './const';
 
 export default function App() {
   const { user, logout } = useAuth();
@@ -86,12 +26,20 @@ export default function App() {
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [showFilters, setShowFilters] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isViewOnly, setIsViewOnly] = useState(false);
+  const [sharedUserId, setSharedUserId] = useState<string | null>(null);
   const allTypes = useMemo(() => [...BUILTIN_TYPES, ...customTypes], [customTypes]);
 
   useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    console.log("urlParams", urlParams.toString());
+    if (urlParams.get('sharedUserId')) {
+      setSharedUserId(urlParams.get('sharedUserId'));
+      setIsViewOnly(true);
+    }
     const fetchData = async () => {
       setIsLoading(true);
-      const { data, error } = await supabase.from('media_entries').select('*');
+      const { data, error } = sharedUserId ? await supabase.from('media_entries').select('*').eq('user_id', sharedUserId) : await supabase.from('media_entries').select('*');
       if (error) {
         console.error('Error fetching data:', error);
       }
@@ -257,7 +205,7 @@ export default function App() {
   };
 
   // Auth gate — placed after all hooks so Rules of Hooks are satisfied
-  if (!user) return <LoginScreen />;
+  if (!user && !sharedUserId) return <LoginScreen />;
 
   const isFiltered = search.trim() !== '' || filterType !== 'All';
 
@@ -300,16 +248,17 @@ export default function App() {
 
             {/* Right side: Add button + user */}
             <div className="flex items-center gap-3">
-              <button
-                onClick={openAdd}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-white font-semibold text-sm
+              {!isViewOnly &&
+                <button
+                  onClick={openAdd}
+                  className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-white font-semibold text-sm
                            hover:bg-accent-hover active:scale-95 transition-all
                            focus:outline-none focus:ring-2 focus:ring-accent/60 focus:ring-offset-2 focus:ring-offset-dark-900"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add Entry</span>
-              </button>
-              <UserMenu user={user} onLogout={logout} />
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Entry</span>
+                </button>}
+              <UserMenu user={user} onLogout={logout} isViewOnly={isViewOnly} sharedUserId={user?.id || null} />
             </div>
           </div>
         </div>
@@ -447,6 +396,7 @@ export default function App() {
                 entry={entry}
                 onClick={() => setViewEntry(entry)}
                 onDelete={handleDelete}
+                isViewOnly={isViewOnly}
               />
             ))}
           </div>
@@ -473,6 +423,7 @@ export default function App() {
           onClose={() => setViewEntry(null)}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          isViewOnly={isViewOnly}
         />
       )}
 

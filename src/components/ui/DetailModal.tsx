@@ -9,6 +9,7 @@ interface Props {
   onClose: () => void;
   onEdit: (entry: MediaEntry) => void;
   onDelete: (id: string) => void;
+  isViewOnly: boolean;
 }
 
 const typeBadgeColor: Record<string, string> = {
@@ -25,7 +26,7 @@ const ratingLabels: Record<number, { label: string; color: string }> = {
   5: { label: 'Masterpiece', color: 'text-green-400' },
 };
 
-export default function DetailModal({ entry, onClose, onEdit, onDelete }: Props) {
+export default function DetailModal({ entry, onClose, onEdit, onDelete, isViewOnly }: Props) {
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = ''; };
@@ -158,26 +159,27 @@ export default function DetailModal({ entry, onClose, onEdit, onDelete }: Props)
         </div>
 
         {/* Footer actions */}
-        <div className="px-5 py-4 border-t border-dark-700 flex gap-3">
-          <button
-            onClick={handleDelete}
-            className="flex items-center gap-2 px-4 py-3 rounded-xl border bg-accent border-dark-600 text-dark-300 font-medium text-sm
+        {!isViewOnly &&
+          <div className="px-5 py-4 border-t border-dark-700 flex gap-3">
+            <button
+              onClick={handleDelete}
+              className="flex items-center gap-2 px-4 py-3 rounded-xl border bg-accent border-dark-600 text-dark-300 font-medium text-sm
                        hover:bg-accent-hover text-white
                       focus:outline-none focus:ring-2 focus:ring-red-500/40"
-          >
-            <Trash2 className="w-4 h-4" />
-            Delete
-          </button>
-          <button
-            onClick={() => onEdit(entry)}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-dark-700 text-white font-medium text-sm
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete
+            </button>
+            <button
+              onClick={() => onEdit(entry)}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-dark-700 text-white font-medium text-sm
                        hover:bg-dark-600 transition-colors border border-dark-600
                        focus:outline-none focus:ring-2 focus:ring-dark-400"
-          >
-            <Edit2 className="w-4 h-4" />
-            Edit Entry
-          </button>
-        </div>
+            >
+              <Edit2 className="w-4 h-4" />
+              Edit Entry
+            </button>
+          </div>}
       </div>
     </div>
   );
