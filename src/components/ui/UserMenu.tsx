@@ -1,6 +1,6 @@
 import { ChevronDown, LogOut, Share } from "lucide-react";
 import type { User } from '../../types';
-import { getUserInitials } from "@/utils/util";
+import { getUserInitials } from "../../utils/util";
 import { useState, useRef, useEffect } from "react";
 
 function onShare(sharedUserId: string | null) {
