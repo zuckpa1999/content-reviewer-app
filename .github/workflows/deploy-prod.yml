@@ -43,5 +43,9 @@ jobs:
       - name: Build app
         run: npm run build
 
+      - name: Prepare Vercel static output
+        run: |
+          node -e "const fs=require('fs'); fs.rmSync('.vercel/output',{recursive:true,force:true}); fs.mkdirSync('.vercel/output/static',{recursive:true}); fs.cpSync('dist','.vercel/output/static',{recursive:true}); fs.writeFileSync('.vercel/output/config.json', JSON.stringify({version:3,routes:[{handle:'filesystem'},{src:'/.*',dest:'/index.html'}]}, null, 2));"
+
       - name: Deploy to Vercel (Production)
-        run: npx vercel@latest deploy ./dist --prod --token="${VERCEL_TOKEN}" --yes
+        run: npx vercel@latest deploy --prebuilt --prod --token="${VERCEL_TOKEN}" --yes
