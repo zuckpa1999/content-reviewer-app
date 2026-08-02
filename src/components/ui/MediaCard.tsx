@@ -7,6 +7,7 @@ interface Props {
   entry: MediaEntry;
   onClick: () => void;
   onDelete: (id: string) => void;
+  isViewOnly?: boolean;
 }
 
 const typeBadgeColor: Record<string, string> = {
@@ -15,7 +16,7 @@ const typeBadgeColor: Record<string, string> = {
   'Anime': 'bg-pink-500/20 text-pink-300 border-pink-500/30',
 };
 
-export default function MediaCard({ entry, onClick, onDelete }: Props) {
+export default function MediaCard({ entry, onClick, onDelete, isViewOnly }: Props) {
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     onDelete(entry.id);
@@ -56,7 +57,7 @@ export default function MediaCard({ entry, onClick, onDelete }: Props) {
         </div>
 
         {/* Delete button */}
-        <button
+        {!isViewOnly && <button
           onClick={handleDelete}
           aria-label="Delete entry"
           className="absolute top-3 right-3 p-1.5 rounded-full bg-dark-900/70 border border-dark-600/50
@@ -65,7 +66,7 @@ export default function MediaCard({ entry, onClick, onDelete }: Props) {
                      focus:outline-none focus:ring-2 focus:ring-accent/60"
         >
           <Trash2 className="w-4 h-4" />
-        </button>
+        </button>}
 
         {/* Bottom info overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-3">
