@@ -40,8 +40,16 @@ jobs:
       - name: Run unit + integration tests (Vitest)
         run: npm run test:run
 
+      - name: Show Supabase project ref
+        run: |
+          node -e "const raw=process.env.VITE_SUPABASE_URL || ''; const host=raw.replace(/^https?:\/\//, '').split('/')[0]; const ref=host.split('.')[0]; if (!ref) { console.error('VITE_SUPABASE_URL is missing or invalid'); process.exit(1); } console.log('Supabase project ref used for dev build:', ref);"
+
       - name: Build app
         run: npm run build
+
+      - name: Verify built Supabase host
+        run: |
+          node -e "const fs=require('fs'); const raw=process.env.VITE_SUPABASE_URL || ''; const host=raw.replace(/^https?:\/\//, '').split('/')[0]; const files=fs.readdirSync('dist/assets').filter((file)=>file.endsWith('.js')); const contents=files.map((file)=>fs.readFileSync('dist/assets/'+file,'utf8')).join('\n'); if (!contents.includes(host)) { console.error('Built bundle does not contain expected Supabase host:', host); process.exit(1); } console.log('Built bundle contains Supabase host:', host);"
 
       - name: Prepare Vercel static output
         run: |
