@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState, ReactNode } from 'react';
-import { supabase } from '../../../supabaseClient';
+import { getAuthRedirectUrl, supabase } from '../../../supabaseClient';
 import { User, AuthContextType } from '../../types';
 import { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
@@ -43,7 +43,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (provider: 'google') => {
-    await supabase.auth.signInWithOAuth({ provider });
+    await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: getAuthRedirectUrl(),
+      },
+    });
   };
 
   const logout = async () => {
@@ -56,6 +61,5 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     </AuthContext.Provider>
   );
 }
-
 
 

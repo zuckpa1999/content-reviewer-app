@@ -24,6 +24,7 @@ const mockEntry: MediaEntry = {
   createdAt: '2026-01-15T10:00:00.000Z',
 };
 
+
 describe('AddEntryModal', () => {
   beforeEach(() => vi.clearAllMocks());
 
