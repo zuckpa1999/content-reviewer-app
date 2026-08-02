@@ -4,14 +4,6 @@ import { createClient } from "@supabase/supabase-js";
 const isCypress =
   typeof window !== 'undefined' && typeof (window as any).Cypress !== 'undefined';
 
-export const getAuthRedirectUrl = () => {
-  if (typeof window === 'undefined') {
-    return undefined;
-  }
-
-  return window.location.origin;
-};
-
 // Cypress E2E should be able to run without a real Supabase backend/session.
 // This avoids relying on auth state + network calls when the user is just running `cypress open`.
 let supabaseImpl: any;
@@ -47,7 +39,7 @@ if (isCypress) {
         cb?.('SIGNED_IN', cypressSession);
         return { data: { subscription: mockSubscription } };
       },
-      signInWithOAuth: async () => ({ data: null, error: null }),
+      signInWithOAuth: async () => ({}),
       signOut: async () => ({}),
     },
   };
