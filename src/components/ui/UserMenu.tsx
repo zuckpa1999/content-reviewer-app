@@ -14,7 +14,15 @@ function onShare(sharedUserId: string | null) {
     // 2. implement a shareable link that opens the app in view-only mode with the user's entries
     // 3. implement a way to copy the shareable link to the clipboard
 };
-export default function UserMenu({ user, onLogout, isViewOnly, sharedUserId }: { user: User; onLogout: () => void; isViewOnly: boolean; sharedUserId: string | null }) {
+
+type UserMenuProps = {
+    user: User | null;
+    onLogout: () => void;
+    isViewOnly: boolean;
+    sharedUserId: string | null;
+};
+
+export default function UserMenu({ user, onLogout, isViewOnly, sharedUserId }: UserMenuProps) {
 
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
@@ -37,15 +45,15 @@ export default function UserMenu({ user, onLogout, isViewOnly, sharedUserId }: {
             >
                 <div className="w-7 h-7 rounded-full bg-accent ring-2 ring-accent/25 flex items-center justify-center
                         text-white text-xs font-black select-none flex-shrink-0">
-                    {isViewOnly ? "V" : getUserInitials(user)}
+                    {isViewOnly ? "V" : user ? getUserInitials(user) : ''}
                 </div>
                 {isViewOnly ?
                     <span className="hidden sm:block text-sm font-medium text-dark-100">Viewer Mode</span> :
-                    <span className="hidden sm:block text-sm font-medium text-dark-100">{user.firstName}</span>}
+                    <span className="hidden sm:block text-sm font-medium text-dark-100">{user?.firstName}</span>}
                 <ChevronDown className={`hidden sm:block w-3.5 h-3.5 text-dark-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
             </button>
 
-            {open && !isViewOnly && (
+            {open && !isViewOnly && user && (
                 <div className="absolute right-0 top-full mt-2 w-56 bg-dark-800 rounded-xl border border-dark-700
                         shadow-xl shadow-black/50 overflow-hidden animate-scale-in z-50">
                     <div className="px-4 py-3.5 border-b border-dark-700/80">
