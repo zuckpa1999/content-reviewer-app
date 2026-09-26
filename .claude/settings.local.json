@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npm run test:run)",
-      "Bash(npm install --save-dev cypress)"
+      "Bash(npm install --save-dev cypress)",
+      "Bash(npx tsc *)",
+      "Bash(pkill -f \"vite\")"
     ]
   }
 }
