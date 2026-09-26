@@ -1,0 +1,11 @@
+{
+  "remoteName": "origin",
+  "projects": [
+    {
+      "id": "prj_eAFj1SbCOm2zWhb2ZWF6YC4UXCYC",
+      "name": "content-reviewer-app",
+      "directory": ".",
+      "orgId": "team_zM8QnBefM8rVty5uFg7H7BAC"
+    }
+  ]
+}

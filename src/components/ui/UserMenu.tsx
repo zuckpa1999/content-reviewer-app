@@ -2,18 +2,7 @@ import { ChevronDown, LogOut, Share } from "lucide-react";
 import type { User } from '../../types';
 import { getUserInitials } from "../../utils/util";
 import { useState, useRef, useEffect } from "react";
-
-function onShare(sharedUserId: string | null) {
-    alert(`her's your shareable link:\n https://content-reviewer-app-git-develop-zuckpa1999s-projects.vercel.app/?sharedUserId=${sharedUserId}`)
-    // todo - implement share functionality
-    // 1. implement view-only mode in the app (no add/edit/delete)
-    //1.1 hide the delete button on the top right on the component
-    //1.2 hide the edit button on the bottom right on the component
-    //1.3 hide the delete button on the bottom right of the detail modal
-    // 1.4 hide the add button(Add Entry) on the top right of the header
-    // 2. implement a shareable link that opens the app in view-only mode with the user's entries
-    // 3. implement a way to copy the shareable link to the clipboard
-};
+import ShareModal from "./ShareModal";
 
 type UserMenuProps = {
     user: User | null;
@@ -25,6 +14,7 @@ type UserMenuProps = {
 export default function UserMenu({ user, onLogout, isViewOnly, sharedUserId }: UserMenuProps) {
 
     const [open, setOpen] = useState(false);
+    const [showShare, setShowShare] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -62,7 +52,7 @@ export default function UserMenu({ user, onLogout, isViewOnly, sharedUserId }: U
                     </div>
                     <div className="p-1.5">
                         <button
-                            onClick={() => { onShare(sharedUserId) }}
+                            onClick={() => { setShowShare(true); setOpen(false); }}
                             className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-dark-300
                          hover:text-white hover:bg-dark-700 transition-colors text-left"
                         >
@@ -80,6 +70,10 @@ export default function UserMenu({ user, onLogout, isViewOnly, sharedUserId }: U
                         </button>
                     </div>
                 </div>
+            )}
+
+            {showShare && (
+                <ShareModal sharedUserId={sharedUserId} onClose={() => setShowShare(false)} />
             )}
         </div>
     );
