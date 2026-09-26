@@ -37,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run unit + integration tests (Vitest)
+      - name: Run unit tests (Vitest)
         run: npm run test:run
 
       - name: Show Supabase project ref
