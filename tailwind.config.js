@@ -40,7 +40,7 @@ export default {
         'frame-settle':   'frameSettle 620ms cubic-bezier(0.16, 1, 0.3, 1) 760ms both',
         'gate-up':        'gateUp 500ms cubic-bezier(0.7, 0, 0.84, 0) forwards',
         'gate-down':      'gateDown 500ms cubic-bezier(0.7, 0, 0.84, 0) forwards',
-        'gate-collapse':  'gateCollapse 500ms ease-in forwards',
+        'frame-out':      'frameOut 220ms ease-in forwards',
       },
       keyframes: {
         fadeIn:  { '0%': { opacity: '0' },                           '100%': { opacity: '1' } },
@@ -51,12 +51,12 @@ export default {
         filmRun:     { '0%': { transform: 'translateX(0)' },   '100%': { transform: 'translateX(-50%)' } },
         lightLeak:   { '0%': { transform: 'translateX(0)', opacity: '0' }, '25%': { opacity: '1' }, '100%': { transform: 'translateX(520%)', opacity: '0' } },
         frameSettle: {
-          '0%':   { opacity: '0', transform: 'translateX(48px) scale(0.94)' },
+          '0%':   { opacity: '0', transform: 'translateX(calc(var(--frame-w) * 0.3)) scale(0.94)' },
           '100%': { opacity: '1', transform: 'translateX(0) scale(1)' },
         },
+        frameOut: { '0%': { opacity: '1' }, '100%': { opacity: '0' } },
         gateUp:       { '0%': { transform: 'translateY(0)' }, '100%': { transform: 'translateY(-102%)' } },
         gateDown:     { '0%': { transform: 'translateY(0)' }, '100%': { transform: 'translateY(102%)' } },
-        gateCollapse: { '0%': { opacity: '1', transform: 'scaleY(1)' }, '100%': { opacity: '0', transform: 'scaleY(0.4)' } },
       },
     },
   },
